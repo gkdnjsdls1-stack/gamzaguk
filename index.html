@@ -1,3 +1,4 @@
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>감자국 관보</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
 <style>
@@ -6,25 +7,32 @@
     --paper:#EFE6D5; --flesh:#F5E6C8; --skin:#8B5E34; --sprout:#6B8F3C;
     --solanine:#C94F3D; --gold:#D9A42B;
     --ink:#2B2118; --ink-2:#6B5A47; --line:#C9B99B; --sack:#E3D5BC;
+    /* 글자 전용 — 배경/채움용 원색은 라이트에서 4.5:1을 못 넘는다 */
+    --gold-ink:#6E540C; --warn-ink:#A33726; --ok-ink:#46631F;
     --stamp:rgba(139,94,52,.14);
   }
   @media (prefers-color-scheme: dark){
     :root:not([data-theme="light"]){
-      --paper:#1F1A15; --flesh:#2A231B; --skin:#C08E5C; --sprout:#8FB355;
+      --paper:#171310; --flesh:#2A231B; --skin:#C08E5C; --sprout:#8FB355;
       --solanine:#E0705C; --gold:#E8BC51;
-      --ink:#F0E6D4; --ink-2:#A2907A; --line:#453A2C; --sack:#2A231B;
+      --ink:#F0E6D4; --ink-2:#A2907A; --line:#5C4E3B; --sack:#211A13;
+      --gold-ink:#E8BC51; --warn-ink:#E0705C; --ok-ink:#8FB355;
       --stamp:rgba(192,142,92,.16);
     }
   }
   :root[data-theme="dark"]{
-    --paper:#1F1A15; --flesh:#2A231B; --skin:#C08E5C; --sprout:#8FB355;
+    --paper:#171310; --flesh:#2A231B; --skin:#C08E5C; --sprout:#8FB355;
     --solanine:#E0705C; --gold:#E8BC51;
-    --ink:#F0E6D4; --ink-2:#A2907A; --line:#453A2C; --sack:#2A231B;
+    --ink:#F0E6D4; --ink-2:#A2907A; --line:#5C4E3B; --sack:#211A13;
+      --gold-ink:#E8BC51; --warn-ink:#E0705C; --ok-ink:#8FB355;
     --stamp:rgba(192,142,92,.16);
   }
   *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
   body{
     margin:0; background:var(--paper); color:var(--ink);
+    -webkit-tap-highlight-color:transparent;
     font-family:"IBM Plex Sans KR",system-ui,-apple-system,sans-serif;
     font-size:13px; line-height:1.45;
     font-variant-numeric:tabular-nums; /* 방치형에서 숫자가 흔들리면 싸구려로 보인다 */
@@ -38,7 +46,19 @@
   #frame{
     width:100%; max-width:1080px; background:var(--flesh);
     border:1px solid var(--line); box-shadow:0 1px 0 var(--line), 0 18px 40px -28px rgba(0,0,0,.5);
-    display:grid; grid-template-rows:44px 1fr 28px; min-height:462px;
+    display:grid; grid-template-rows:44px 1fr 28px; min-height:462px; max-height:100dvh;
+  }
+  /* 가로 폰 = 본편 화면. 높이가 모자란 기기에서는 액자를 버리고 꽉 채운다 */
+  @media (max-height:560px){
+    body{padding:0; align-items:stretch}
+    #frame{min-height:100dvh; max-width:none; border:none; box-shadow:none;
+      padding-left:env(safe-area-inset-left); padding-right:env(safe-area-inset-right)}
+  }
+  /* 손가락은 28px 행을 못 짚는다 */
+  @media (pointer:coarse){
+    th,td{height:40px}
+    #rail button{height:52px}
+    input[type=range]{height:34px}
   }
   /* HUD 44px */
   #hud{
@@ -55,7 +75,7 @@
   .bar.warn>i{background:var(--solanine)}
 
   /* 본문: 레일 64 | 메인 | 패널 320 */
-  #body{display:grid; grid-template-columns:64px minmax(0,1fr) 320px; min-height:0}
+  #body{display:grid; grid-template-columns:64px minmax(0,1fr) clamp(216px,26vw,320px); min-height:0}
   #rail{
     border-right:1px solid var(--line); display:flex; flex-direction:column;
     align-items:center; padding-top:8px; gap:4px; background:var(--sack);
@@ -84,6 +104,7 @@
   td.r,th.r{text-align:right}
   tr.sel td{background:var(--stamp)}
   tbody tr{cursor:pointer}
+  tbody tr:focus-visible{outline:2px solid var(--skin); outline-offset:-2px}
   button.act{
     font:inherit; font-weight:600; color:var(--flesh); background:var(--skin);
     border:none; padding:7px 12px; cursor:pointer; letter-spacing:.02em;
@@ -95,8 +116,8 @@
   .row{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
   .kv{display:flex; justify-content:space-between; gap:10px; padding:4px 0; border-bottom:1px dotted var(--line)}
   .kv span:first-child{color:var(--ink-2)}
-  .warn{color:var(--solanine)}
-  .ok{color:var(--sprout)}
+  .warn{color:var(--warn-ink)}
+  .ok{color:var(--ok-ink)}
   .chip{
     display:inline-block; padding:1px 7px; border:1px solid var(--line);
     font-size:11px; letter-spacing:.04em;
@@ -134,7 +155,7 @@
 
   /* 세로 = Lite (D11) */
   #lite{display:none}
-  @media (max-width:760px){
+  @media (max-width:760px) and (orientation:portrait){
     body{padding:0; align-items:stretch}
     #frame{display:none}
     #lite{display:flex; flex-direction:column; min-height:100vh; width:100%}
@@ -143,9 +164,14 @@
   #lite .big{font-family:"Black Han Sans",sans-serif; font-size:40px; line-height:1.1}
   #lite main{padding:16px; display:flex; flex-direction:column; gap:14px; flex:1}
   #lite .note{font-size:12px; color:var(--ink-2); border:1px dashed var(--line); padding:10px}
-  #lite button.act{padding:16px; font-size:16px; width:100%}
+  #lite button.act{padding:20px; font-size:17px; width:100%;
+    display:flex; align-items:center; justify-content:center; gap:12px}
+  #l-harvest svg{transition:transform .18s cubic-bezier(.2,1.4,.4,1); transform-origin:50% 80%}
+  #l-harvest:active svg{transform:rotate(-14deg) translateY(2px)}
+  @media (prefers-reduced-motion:reduce){#l-harvest svg{transition:none}}
 </style>
 
+<h1 class="sr-only">감자국 관보</h1>
 <div id="frame">
   <div id="hud">
     <div class="slot"><span class="k">국고</span><span class="v num" id="h-al">0</span><span class="k">자루</span></div>
@@ -159,14 +185,14 @@
 
   <div id="body">
     <div id="rail" role="tablist">
-      <button role="tab" data-tab="field" aria-selected="false" title="밭">🌱</button>
-      <button role="tab" data-tab="brewery" aria-selected="true" title="양조장">🍺</button>
-      <button role="tab" data-tab="codex" aria-selected="false" title="도감">📖</button>
+      <button role="tab" data-tab="field" aria-selected="false" aria-controls="v-field" aria-label="밭" title="밭">🌱</button>
+      <button role="tab" data-tab="brewery" aria-selected="true" aria-controls="v-brewery" aria-label="양조장" title="양조장">🍺</button>
+      <button role="tab" data-tab="codex" aria-selected="false" aria-controls="v-codex" aria-label="도감" title="도감">📖</button>
     </div>
 
     <div id="main">
       <!-- 밭 -->
-      <section data-view="field" hidden>
+      <section id="v-field" role="tabpanel" aria-label="밭" data-view="field" hidden>
         <p class="eyebrow">제1호 서식 · 생산 현황</p>
         <table>
           <thead><tr><th>공방</th><th>등급</th><th class="r">산출</th><th class="r">증설비</th></tr></thead>
@@ -181,7 +207,7 @@
       </section>
 
       <!-- 양조장 -->
-      <section data-view="brewery">
+      <section id="v-brewery" role="tabpanel" aria-label="양조장" data-view="brewery">
         <div id="line">
           <p class="eyebrow">제3호 서식 · 양조 라인</p>
           <table><tbody id="t-line"></tbody></table>
@@ -202,12 +228,12 @@
             품종 <b id="g-cult" style="color:var(--skin)"></b> · 초록 구간이 이 품종의 목표 배합이다
           </div>
           <div class="sliders">
-            <div class="sl"><label>전분</label><div class="track"><div class="goal" id="goal0"></div><input type="range" id="sl0" min="0" max="100" value="33"></div><span class="v num" id="v0">33%</span></div>
-            <div class="sl"><label>물</label><div class="track"><div class="goal" id="goal1"></div><input type="range" id="sl1" min="0" max="100" value="33"></div><span class="v num" id="v1">33%</span></div>
-            <div class="sl"><label>촉진제 (싹난 감자)</label><div class="track"><div class="goal" id="goal2"></div><input type="range" id="sl2" min="0" max="100" value="34"></div><span class="v num" id="v2">34%</span></div>
+            <div class="sl"><label for="sl0">전분</label><div class="track"><div class="goal" id="goal0"></div><input type="range" id="sl0" min="0" max="100" value="33"></div><span class="v num" id="v0">33%</span></div>
+            <div class="sl"><label for="sl1">물</label><div class="track"><div class="goal" id="goal1"></div><input type="range" id="sl1" min="0" max="100" value="33"></div><span class="v num" id="v1">33%</span></div>
+            <div class="sl"><label for="sl2">촉진제 (싹난 감자)</label><div class="track"><div class="goal" id="goal2"></div><input type="range" id="sl2" min="0" max="100" value="34"></div><span class="v num" id="v2">34%</span></div>
           </div>
           <div class="sl" style="margin:10px 0">
-            <label>발효 시간 — 목표 72h ±2h</label>
+            <label for="slf">발효 시간 — 목표 72h ±2h</label>
             <input type="range" id="slf" min="48" max="96" step="0.5" value="60">
             <span class="v num" id="vf">60.0h</span>
           </div>
@@ -223,7 +249,7 @@
       </section>
 
       <!-- 도감 -->
-      <section data-view="codex" hidden>
+      <section id="v-codex" role="tabpanel" aria-label="도감" data-view="codex" hidden>
         <p class="eyebrow">제4호 서식 · 보유 품종</p>
         <table>
           <thead><tr><th>품종</th><th class="r">전분</th><th class="r">솔라닌</th><th class="r">형태</th><th class="r">수확</th></tr></thead>
@@ -254,8 +280,14 @@
     <div style="color:var(--ink-2); font-size:12px" id="l-sub"></div>
   </header>
   <main>
-    <button class="act gold" id="l-harvest">자루 털기</button>
+    <button class="act gold" id="l-harvest">
+      <svg viewBox="0 0 48 48" width="30" height="30" aria-hidden="true" focusable="false">
+        <path d="M19 7h10l-2.5 7.5c6 3.2 9.5 9 9.5 16.5 0 6.6-5 11-12 11s-12-4.4-12-11c0-7.5 3.5-13.3 9.5-16.5z"
+              fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M17.5 14.5h13" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+      </svg>자루 털기</button>
     <div id="l-warn" class="warn" style="font-size:13px"></div>
+    <div style="flex:1"></div>
     <div class="note">
       본편은 <b>가로</b>다. 라인 편성·미니게임·교배는 기기를 돌려야 나온다.<br>
       세로에서 할 수 있는 것은 수금과 경고 확인뿐 — 2~3분 접속의 90%가 수금이라서 그렇게 정했다(D11).
@@ -379,11 +411,14 @@ function prod(k){
   return fmt(C.POWER_SUPPLY*S.lv.power,0)+" 공급";
 }
 function rowsFor(keys,tbody){
+  // ponytail: 포커스가 안에 있으면 통째 갱신을 건너뛴다(그 표만 잠깐 멈춤).
+  //           행 단위 diff가 필요해지면 그때 쪼갠다.
+  if(tbody.contains(document.activeElement))return;
   tbody.innerHTML=keys.map(k=>{
     const lv=S.lv[k], max=lv>=C.MAX_LV, c=cost(k,lv);
-    return `<tr data-up="${k}" class="${S.selLine===k?"sel":""}">
+    return `<tr data-up="${k}" tabindex="0" class="${S.selLine===k?"sel":""}">
       <td>${LINES[k][0]}</td><td>Lv${lv}</td><td class="r num">${prod(k)}</td>
-      <td class="r num" style="color:${!max&&S.al>=c?"var(--sprout)":"var(--ink-2)"}">
+      <td class="r num" style="color:${!max&&S.al>=c?"var(--ok-ink)":"var(--ink-2)"}">
         ${max?"최대":sack(c)+"자루"}</td></tr>`;
   }).join("");
 }
@@ -391,7 +426,7 @@ function render(){
   const m=marketMult(S.t/3600);
   $("#h-al").textContent=sack(S.al);
   $("#h-mkt").textContent=(m>=1?"▲":"▼")+m.toFixed(2);
-  $("#h-mkt").style.color=m>=1?"var(--sprout)":"var(--solanine)";
+  $("#h-mkt").style.color=m>=1?"var(--ok-ink)":"var(--warn-ink)";
   const sl=slack(), use=C.MILL_POWER*S.lv.mill+C.BREW_POWER*S.lv.brew;
   $("#h-pow").textContent=fmt(use)+"/"+fmt(C.POWER_SUPPLY*S.lv.power);
   $("#h-powbar").className="bar"+(sl<0?" warn":"");
@@ -409,7 +444,7 @@ function render(){
       .map(([n,k])=>{
         const pct=S.inv[k]/C.STORE[k]*100, near=pct>88;
         return `<tr><td>${n}${k==="sprout"&&warn?' <span class="warn">⚠️</span>':""}</td>
-          <td class="r num" style="color:${near?"var(--solanine)":"inherit"}">
+          <td class="r num" style="color:${near?"var(--warn-ink)":"inherit"}">
           ${fmt(S.inv[k],k==="beer"?1:0)} / ${fmt(C.STORE[k])}${near?" (만재)":""}</td></tr>`;
       }).join("");
     $("#s-harvest").textContent=S.flash||(S.inv.beer>0?fmt(S.inv.beer,1)+"병 대기":"맥주가 없다");
@@ -418,7 +453,7 @@ function render(){
     rowsFor(["mill","brew"],$("#t-line"));
     $("#deleg").innerHTML=S.recipe
       ?`<div class="kv"><span>${S.recipe.name} · 등록 품질</span>
-          <span><span class="grade" style="color:var(--gold)">${grade(S.recipe.q)}</span>
+          <span><span class="grade" style="color:var(--gold-ink)">${grade(S.recipe.q)}</span>
           <span class="num">${S.recipe.q.toFixed(1)}</span></span></div>
         <div class="kv"><span>위임 산출 (숙련도와 무관)</span>
           <span><span class="grade">${delegated(S.recipe.q)[0]}</span>
@@ -428,8 +463,9 @@ function render(){
       :`<div class="warn">등록된 레시피가 없다. 직접 양조해야 라인이 돈다.</div>`;
   }
   if(S.tab==="codex"){
+    if(!$("#t-cult").contains(document.activeElement))
     $("#t-cult").innerHTML=S.cult.map((c,i)=>
-      `<tr data-cult="${i}" class="${S.sel.includes(i)?"sel":""}">
+      `<tr data-cult="${i}" tabindex="0" class="${S.sel.includes(i)?"sel":""}">
         <td>${c.name}${c.gag?` <span class="chip on">${c.gag}</span>`:""}</td>
         <td class="r num">${c.starch.toFixed(0)}</td><td class="r num">${c.solanine.toFixed(0)}</td>
         <td class="r num">${c.form.toFixed(0)}</td><td class="r num">${c.yield_.toFixed(0)}</td></tr>`).join("");
@@ -455,6 +491,7 @@ function render(){
 }
 function renderPanel(){
   const p=$("#panel");
+  if(p.contains(document.activeElement))return;
   if(S.tab==="field"){
     const k=S.selLine||"farm", lv=S.lv[k], c=cost(k,lv), warn=S.inv.sprout>C.STORE.sprout*.7;
     p.innerHTML=`<p class="eyebrow">선택 대상</p>
@@ -471,16 +508,18 @@ function renderPanel(){
         <div style="font-size:11.5px; color:var(--ink-2); margin-bottom:8px">
           촉진제로 두면 양조 재료, 심으면 감자가 된다. 창고가 차면 버려진다.</div>
         <button class="act ghost" id="b-plant">씨감자로 심기 (100 → 감자 300)</button>`:""}`;
-    if($("#b-up"))$("#b-up").onclick=()=>{if(S.al>=c){S.al-=c;S.lv[k]++;save();render();}};
+    if($("#b-up"))$("#b-up").onclick=()=>{if(S.al>=c){S.al-=c;S.lv[k]++;save();
+      document.activeElement.blur(); render(); if($("#b-up"))$("#b-up").focus();}};
     if($("#b-plant"))$("#b-plant").onclick=()=>{
-      if(S.inv.sprout>=100){S.inv.sprout-=100;S.inv.potato=Math.min(C.STORE.potato,S.inv.potato+300);save();render();}};
+      if(S.inv.sprout>=100){S.inv.sprout-=100;S.inv.potato=Math.min(C.STORE.potato,S.inv.potato+300);save();
+        document.activeElement.blur(); render(); if($("#b-plant"))$("#b-plant").focus();}};
   } else if(S.tab==="brewery"){
     const c=S.cult[0], cl=ceiling(c.starch,c.solanine,S.lv.brew);
     p.innerHTML=`<p class="eyebrow">품질 천장</p>
       <div class="kv"><span>품종 ${c.name}</span><span class="num">전분 ${c.starch.toFixed(0)}</span></div>
       <div class="kv"><span>솔라닌</span><span class="num">${c.solanine.toFixed(0)}</span></div>
       <div class="kv"><span>양조장</span><span class="num">Lv${S.lv.brew}</span></div>
-      <div class="kv"><span><b>이 조합의 천장</b></span><span class="num" style="color:var(--gold)"><b>${cl.toFixed(1)}</b></span></div>
+      <div class="kv"><span><b>이 조합의 천장</b></span><span class="num" style="color:var(--gold-ink)"><b>${cl.toFixed(1)}</b></span></div>
       <div style="font-size:11.5px; color:var(--ink-2); margin-top:8px">
         천장 = 60 + 0.20×전분 + 0.10×(100−솔라닌) + 1.0×Lv.<br>
         S(90)를 보려면 교배로 천장을 올려야 한다. 100점은 완벽한 감자(4막)만 가능하다.</div>
@@ -495,7 +534,7 @@ function renderPanel(){
       ${[["전분율","starch"],["수확량","yield_"],["내병성","disease"],["솔라닌","solanine"],
          ["형태 완전성","form"],["우주 적응","space"]].map(([n,k])=>
         `<div class="kv"><span>${n}</span><span class="num">${c[k].toFixed(0)}</span></div>`).join("")}
-      <div class="kv"><span>양조 천장</span><span class="num" style="color:var(--gold)">${ceiling(c.starch,c.solanine,S.lv.brew).toFixed(1)}</span></div>
+      <div class="kv"><span>양조 천장</span><span class="num" style="color:var(--gold-ink)">${ceiling(c.starch,c.solanine,S.lv.brew).toFixed(1)}</span></div>
       <div class="kv"><span>못생김 점수</span><span class="num">${uglyScore(c).toFixed(1)}</span></div>
       <div style="font-size:11.5px; color:var(--ink-2); margin-top:8px">도감: ${entries(c).join(", ")}</div>
       <div style="font-size:11.5px; color:var(--ink-2); margin-top:10px">
@@ -530,7 +569,7 @@ function gameUpdate(){
   $("#g-ach").textContent=(ach*100).toFixed(0)+"%";
   $("#g-meter").firstElementChild.style.width=Math.min(100,q)+"%";
   $("#g-q").textContent=q.toFixed(1)+" ("+grade(q)+")";
-  $("#g-q").style.color=q>=90?"var(--gold)":q>=75?"var(--sprout)":"inherit";
+  $("#g-q").style.color=q>=90?"var(--gold-ink)":q>=75?"var(--ok-ink)":"inherit";
   G.q=q; G.mix=mix; G.fh=fh;
 }
 function closeGame(){G.on=false; $("#game").classList.remove("on"); $("#line").hidden=false; render();}
@@ -558,6 +597,19 @@ $("#main").addEventListener("click",e=>{
   const cu=e.target.closest("[data-cult]");
   if(cu){const i=+cu.dataset.cult;
     S.sel=S.sel.includes(i)?S.sel.filter(x=>x!==i):[...S.sel,i].slice(-2); render();}
+});
+/* role="tab"을 선언했으면 화살표도 돌아야 한다 */
+$("#rail").addEventListener("keydown",e=>{
+  const bs=[...document.querySelectorAll("#rail button")], i=bs.indexOf(document.activeElement);
+  if(i<0||!/^Arrow(Up|Down|Left|Right)$/.test(e.key))return;
+  e.preventDefault();
+  const nx=bs[(i+(/Up|Left/.test(e.key)?bs.length-1:1))%bs.length]; nx.focus(); nx.click();
+});
+/* 표 행 선택 — 마우스가 없으면 교배가 아예 안 됐다 */
+$("#main").addEventListener("keydown",e=>{
+  if(e.key!=="Enter"&&e.key!==" ")return;
+  const r=e.target.closest("tr[tabindex]"); if(!r)return;
+  e.preventDefault(); r.click();
 });
 $("#b-harvest").onclick=sell; $("#l-harvest").onclick=sell;
 $("#b-play").onclick=openGame; $("#b-cancel").onclick=closeGame; $("#b-submit").onclick=submitRecipe;
