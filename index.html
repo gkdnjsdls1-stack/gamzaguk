@@ -1,0 +1,605 @@
+<title>감자국 관보</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<style>
+  /* 감자국 — 「감자 자루에 찍힌 도장」. 팔레트는 PLAN.md 13장 그대로. */
+  :root{
+    --paper:#EFE6D5; --flesh:#F5E6C8; --skin:#8B5E34; --sprout:#6B8F3C;
+    --solanine:#C94F3D; --gold:#D9A42B;
+    --ink:#2B2118; --ink-2:#6B5A47; --line:#C9B99B; --sack:#E3D5BC;
+    --stamp:rgba(139,94,52,.14);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#1F1A15; --flesh:#2A231B; --skin:#C08E5C; --sprout:#8FB355;
+      --solanine:#E0705C; --gold:#E8BC51;
+      --ink:#F0E6D4; --ink-2:#A2907A; --line:#453A2C; --sack:#2A231B;
+      --stamp:rgba(192,142,92,.16);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#1F1A15; --flesh:#2A231B; --skin:#C08E5C; --sprout:#8FB355;
+    --solanine:#E0705C; --gold:#E8BC51;
+    --ink:#F0E6D4; --ink-2:#A2907A; --line:#453A2C; --sack:#2A231B;
+    --stamp:rgba(192,142,92,.16);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"IBM Plex Sans KR",system-ui,-apple-system,sans-serif;
+    font-size:13px; line-height:1.45;
+    font-variant-numeric:tabular-nums; /* 방치형에서 숫자가 흔들리면 싸구려로 보인다 */
+    display:flex; align-items:center; justify-content:center;
+    min-height:100vh; padding:16px;
+  }
+  h1,h2,.display{font-family:"Black Han Sans","IBM Plex Sans KR",sans-serif; font-weight:400; letter-spacing:.01em}
+  .num{font-variant-numeric:tabular-nums}
+
+  /* ── 관보 프레임 ──────────────────────────────────────────── */
+  #frame{
+    width:100%; max-width:1080px; background:var(--flesh);
+    border:1px solid var(--line); box-shadow:0 1px 0 var(--line), 0 18px 40px -28px rgba(0,0,0,.5);
+    display:grid; grid-template-rows:44px 1fr 28px; min-height:462px;
+  }
+  /* HUD 44px */
+  #hud{
+    display:flex; align-items:center; gap:18px; padding:0 14px;
+    border-bottom:1px solid var(--line); background:var(--sack);
+  }
+  #hud .slot{display:flex; align-items:baseline; gap:6px; white-space:nowrap}
+  #hud .k{font-size:10px; letter-spacing:.14em; color:var(--ink-2); text-transform:uppercase}
+  #hud .v{font-size:15px; font-weight:600}
+  #hud .spacer{flex:1}
+  .bar{position:relative; width:84px; height:7px; background:var(--line); overflow:hidden}
+  .bar>i{position:absolute; inset:0 auto 0 0; background:var(--sprout); display:block}
+  .bar.gold>i{background:var(--gold)}
+  .bar.warn>i{background:var(--solanine)}
+
+  /* 본문: 레일 64 | 메인 | 패널 320 */
+  #body{display:grid; grid-template-columns:64px minmax(0,1fr) 320px; min-height:0}
+  #rail{
+    border-right:1px solid var(--line); display:flex; flex-direction:column;
+    align-items:center; padding-top:8px; gap:4px; background:var(--sack);
+  }
+  #rail button{
+    width:48px; height:44px; font-size:19px; background:none; border:1px solid transparent;
+    color:var(--ink); cursor:pointer; border-radius:2px;
+  }
+  #rail button[aria-selected="true"]{background:var(--flesh); border-color:var(--line); box-shadow:inset 2px 0 0 var(--skin)}
+  #rail button:focus-visible{outline:2px solid var(--skin); outline-offset:1px}
+  #main{padding:10px 14px; min-width:0; overflow:auto}
+  #panel{border-left:1px solid var(--line); padding:10px 12px; overflow:auto; background:var(--sack)}
+
+  /* 티커 28px */
+  #ticker{
+    border-top:1px solid var(--line); display:flex; align-items:center; gap:8px;
+    padding:0 12px; font-size:11.5px; color:var(--ink-2); overflow:hidden; white-space:nowrap;
+  }
+  #ticker b{color:var(--skin); font-weight:600}
+
+  /* ── 관청 서식 요소 ───────────────────────────────────────── */
+  .eyebrow{font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-2); margin:0 0 6px}
+  table{width:100%; border-collapse:collapse; font-size:12.5px}
+  th,td{height:28px; padding:0 6px; text-align:left; border-bottom:1px solid var(--line)}
+  th{font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-2); font-weight:500}
+  td.r,th.r{text-align:right}
+  tr.sel td{background:var(--stamp)}
+  tbody tr{cursor:pointer}
+  button.act{
+    font:inherit; font-weight:600; color:var(--flesh); background:var(--skin);
+    border:none; padding:7px 12px; cursor:pointer; letter-spacing:.02em;
+  }
+  button.act.ghost{background:none; color:var(--skin); border:1px solid var(--skin)}
+  button.act.gold{background:var(--gold); color:#2B2118}
+  button.act:disabled{opacity:.4; cursor:not-allowed}
+  button.act:focus-visible{outline:2px solid var(--ink); outline-offset:2px}
+  .row{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+  .kv{display:flex; justify-content:space-between; gap:10px; padding:4px 0; border-bottom:1px dotted var(--line)}
+  .kv span:first-child{color:var(--ink-2)}
+  .warn{color:var(--solanine)}
+  .ok{color:var(--sprout)}
+  .chip{
+    display:inline-block; padding:1px 7px; border:1px solid var(--line);
+    font-size:11px; letter-spacing:.04em;
+  }
+  .chip.on{background:var(--stamp); border-color:var(--skin); color:var(--skin)}
+  .grade{font-family:"Black Han Sans",sans-serif; font-size:20px}
+
+  /* 도장 */
+  #stamp{
+    position:fixed; inset:0; display:none; place-items:center; pointer-events:none; z-index:9;
+  }
+  #stamp.go{display:grid}
+  #stamp div{
+    font-family:"Black Han Sans",sans-serif; font-size:84px; color:var(--solanine);
+    border:7px solid var(--solanine); border-radius:50%; width:230px; height:230px;
+    display:grid; place-items:center; transform:rotate(-14deg);
+    animation:thud .55s cubic-bezier(.2,1.5,.4,1) both; opacity:.92;
+  }
+  @keyframes thud{0%{transform:rotate(-14deg) scale(2.6); opacity:0}60%{opacity:.95}100%{transform:rotate(-14deg) scale(1); opacity:.92}}
+  @media (prefers-reduced-motion:reduce){#stamp div{animation:none}}
+
+  /* 미니게임 */
+  #game{display:none}
+  #game.on{display:block}
+  .sliders{display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin:10px 0 4px}
+  .sl{display:flex; flex-direction:column; gap:4px}
+  .sl label{font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-2)}
+  .track{position:relative; height:26px}
+  .track .goal{position:absolute; top:9px; height:8px; background:var(--sprout); opacity:.45}
+  input[type=range]{width:100%; margin:0; accent-color:var(--skin); position:relative; z-index:1}
+  .sl .v{font-size:12px; font-weight:600}
+  .meter{height:12px; border:1px solid var(--line); position:relative; background:var(--sack)}
+  .meter>i{position:absolute; inset:0 auto 0 0; background:var(--gold)}
+  .meter>s{position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--solanine)}
+
+  /* 세로 = Lite (D11) */
+  #lite{display:none}
+  @media (max-width:760px){
+    body{padding:0; align-items:stretch}
+    #frame{display:none}
+    #lite{display:flex; flex-direction:column; min-height:100vh; width:100%}
+  }
+  #lite header{padding:18px 16px 10px; border-bottom:1px solid var(--line); background:var(--sack)}
+  #lite .big{font-family:"Black Han Sans",sans-serif; font-size:40px; line-height:1.1}
+  #lite main{padding:16px; display:flex; flex-direction:column; gap:14px; flex:1}
+  #lite .note{font-size:12px; color:var(--ink-2); border:1px dashed var(--line); padding:10px}
+  #lite button.act{padding:16px; font-size:16px; width:100%}
+</style>
+
+<div id="frame">
+  <div id="hud">
+    <div class="slot"><span class="k">국고</span><span class="v num" id="h-al">0</span><span class="k">자루</span></div>
+    <div class="slot"><span class="k">시세</span><span class="v num" id="h-mkt">1.00</span></div>
+    <div class="slot"><span class="k">전력</span><span class="v num" id="h-pow">7/6</span><span class="bar" id="h-powbar"><i></i></span></div>
+    <div class="slot"><span class="k">명주</span><span class="bar gold" id="h-qbar"><i></i></span><span class="v num" id="h-q">0/90</span></div>
+    <div class="spacer"></div>
+    <div class="slot"><span class="k">경과</span><span class="v num" id="h-day">D+1 06:00</span></div>
+    <div class="slot"><button class="act ghost" id="h-speed">속도 ×60</button></div>
+  </div>
+
+  <div id="body">
+    <div id="rail" role="tablist">
+      <button role="tab" data-tab="field" aria-selected="false" title="밭">🌱</button>
+      <button role="tab" data-tab="brewery" aria-selected="true" title="양조장">🍺</button>
+      <button role="tab" data-tab="codex" aria-selected="false" title="도감">📖</button>
+    </div>
+
+    <div id="main">
+      <!-- 밭 -->
+      <section data-view="field" hidden>
+        <p class="eyebrow">제1호 서식 · 생산 현황</p>
+        <table>
+          <thead><tr><th>공방</th><th>등급</th><th class="r">산출</th><th class="r">증설비</th></tr></thead>
+          <tbody id="t-farm"></tbody>
+        </table>
+        <p class="eyebrow" style="margin-top:12px">제2호 서식 · 창고</p>
+        <table><tbody id="t-store"></tbody></table>
+        <div class="row" style="margin-top:12px">
+          <button class="act gold" id="b-harvest">자루 털기</button>
+          <span id="s-harvest" class="num" style="color:var(--ink-2)"></span>
+        </div>
+      </section>
+
+      <!-- 양조장 -->
+      <section data-view="brewery">
+        <div id="line">
+          <p class="eyebrow">제3호 서식 · 양조 라인</p>
+          <table><tbody id="t-line"></tbody></table>
+          <p class="eyebrow" style="margin-top:12px">위임 (D10 · 품질 1등급 하락 고정)</p>
+          <div id="deleg" style="font-size:12.5px"></div>
+          <div class="row" style="margin-top:12px">
+            <button class="act" id="b-play">🎮 직접 양조하기</button>
+            <span style="color:var(--ink-2); font-size:11.5px">직접 플레이 = 천장을 올리는 행위</span>
+          </div>
+          <p style="margin:10px 0 0; font-size:11.5px; color:var(--ink-2); max-width:62ch">
+            1막 목표 — 첫 맥주를 출하하고 스퍼드 5명분(10자루)을 번다.
+            2막 목표 — 교배로 천장을 올려 <b>품질 90(S)</b>을 등록한다. 지금 천장으로는 S가 나오지 않는다.</p>
+        </div>
+
+        <div id="game">
+          <p class="eyebrow">양조 미니게임 · 원형 A(비율 조합)</p>
+          <div style="font-size:12px; color:var(--ink-2)">
+            품종 <b id="g-cult" style="color:var(--skin)"></b> · 초록 구간이 이 품종의 목표 배합이다
+          </div>
+          <div class="sliders">
+            <div class="sl"><label>전분</label><div class="track"><div class="goal" id="goal0"></div><input type="range" id="sl0" min="0" max="100" value="33"></div><span class="v num" id="v0">33%</span></div>
+            <div class="sl"><label>물</label><div class="track"><div class="goal" id="goal1"></div><input type="range" id="sl1" min="0" max="100" value="33"></div><span class="v num" id="v1">33%</span></div>
+            <div class="sl"><label>촉진제 (싹난 감자)</label><div class="track"><div class="goal" id="goal2"></div><input type="range" id="sl2" min="0" max="100" value="34"></div><span class="v num" id="v2">34%</span></div>
+          </div>
+          <div class="sl" style="margin:10px 0">
+            <label>발효 시간 — 목표 72h ±2h</label>
+            <input type="range" id="slf" min="48" max="96" step="0.5" value="60">
+            <span class="v num" id="vf">60.0h</span>
+          </div>
+          <div class="kv"><span>달성도</span><span class="num" id="g-ach">0%</span></div>
+          <div class="meter" id="g-meter"><i style="width:0"></i><s style="left:90%"></s></div>
+          <div class="kv"><span>예상 품질 (천장 <span id="g-ceil" class="num"></span>)</span><span class="num" id="g-q">0.0</span></div>
+          <div class="row" style="margin-top:10px">
+            <button class="act gold" id="b-submit">레시피 등록</button>
+            <button class="act ghost" id="b-cancel">그만두기</button>
+            <label style="font-size:11.5px; color:var(--ink-2)"><input type="checkbox" id="g-lenient"> 판정 관대 모드</label>
+          </div>
+        </div>
+      </section>
+
+      <!-- 도감 -->
+      <section data-view="codex" hidden>
+        <p class="eyebrow">제4호 서식 · 보유 품종</p>
+        <table>
+          <thead><tr><th>품종</th><th class="r">전분</th><th class="r">솔라닌</th><th class="r">형태</th><th class="r">수확</th></tr></thead>
+          <tbody id="t-cult"></tbody>
+        </table>
+        <div class="row" style="margin-top:10px">
+          <button class="act" id="b-breed">교배하기</button>
+          <span id="s-breed" style="color:var(--ink-2); font-size:11.5px">두 알을 골라라</span>
+        </div>
+        <p class="eyebrow" style="margin-top:14px">도감 <span id="c-count" class="num"></span></p>
+        <div id="c-list" class="row" style="gap:5px"></div>
+        <p class="eyebrow" style="margin-top:14px">🏅 이번 시즌 (NPC 점수는 예시 데이터)</p>
+        <table><tbody id="t-oly"></tbody></table>
+      </section>
+    </div>
+
+    <div id="panel"></div>
+  </div>
+
+  <div id="ticker">📰 <span id="news"></span></div>
+</div>
+
+<!-- 세로 진입 = Lite 로비 (D11: 수금 + 경고만) -->
+<div id="lite">
+  <header>
+    <p class="eyebrow">감자국 관보 · 세로 Lite</p>
+    <div class="big num" id="l-al">0<span style="font-size:18px"> 자루</span></div>
+    <div style="color:var(--ink-2); font-size:12px" id="l-sub"></div>
+  </header>
+  <main>
+    <button class="act gold" id="l-harvest">자루 털기</button>
+    <div id="l-warn" class="warn" style="font-size:13px"></div>
+    <div class="note">
+      본편은 <b>가로</b>다. 라인 편성·미니게임·교배는 기기를 돌려야 나온다.<br>
+      세로에서 할 수 있는 것은 수금과 경고 확인뿐 — 2~3분 접속의 90%가 수금이라서 그렇게 정했다(D11).
+    </div>
+    <div class="note" id="l-news" style="border-style:solid"></div>
+  </main>
+</div>
+
+<div id="stamp"><div id="stamp-g">S</div></div>
+
+<script>
+/* 규칙의 단일 진실은 src/rules/*.ts 와 schema.sql 이다. 아래는 프로토타입용 복제. */
+const C = {
+  GROWTH:1.6, BASE_COST:{farm:800,mill:3000,brew:8000,power:4000}, MAX_LV:10,
+  FARM_RATE:.5, MILL_IN:.4, BREW_RATE:.02, STARCH_PER_BEER:3, SPROUT_PER_BEER:.1,
+  MILL_POWER:2.5, BREW_POWER:3.5, POWER_SUPPLY:7, POWER_POTATO:.3,
+  SPROUT_RATE_H:.02, OFFLINE_SPROUT_CAP:.3, OFFLINE_CAP_H:12, MILL_FLOOR:300,
+  STORE:{potato:1000,starch:2000,sprout:300,beer:500},
+  PRICE:{potato:.2,starch:.5,beer:40}, GRADE_MULT:{D:.5,C:1,B:2,A:4,S:8},
+  KEEP:{potato:500,starch:600}, SPROUT_SHARE:.10,
+};
+const GRADES=[["S",90],["A",75],["B",60],["C",40],["D",0]];
+const cost=(k,lv)=>C.BASE_COST[k]*C.GROWTH**(lv-1);
+const ceiling=(st,so,lv)=>Math.min(100,60+.2*st+.1*(100-so)+1*Math.max(1,Math.min(10,lv)));
+const targetMix=st=>{const a=.5-st/500; return [a,1-a-C.SPROUT_SHARE,C.SPROUT_SHARE];};
+const achievement=(mix,tg,fh,th,len)=>{
+  const tol=len?.45:.3, win=len?3:2;
+  const dev=mix.reduce((s,v,i)=>s+Math.abs(v-tg[i]),0);
+  return .65*Math.max(0,1-dev/tol)+.35*Math.max(0,1-Math.abs(fh-th)/win);
+};
+const grade=q=>{for(const[n,f]of GRADES)if(q>=f)return n;return "D";};
+const delegated=q=>{const i=Math.min(GRADES.findIndex(g=>g[0]===grade(q))+1,4);return GRADES[i];};
+const marketMult=h=>{let x=0;for(let i=0;i<=Math.floor(h);i++)x=.9*x+Math.sin(i*2.399963)*.18;
+  return Math.max(.6,Math.min(1.5,1+x*.35));};
+
+/* 교배 — 자손 = 부모 평균 + 변이(σ=8). 시드 고정. */
+const TR=["starch","yield_","disease","solanine","form","space"];
+let seed=20261014;
+const rnd=()=>{seed=(seed+0x6d2b79f5)>>>0;let t=seed;t=Math.imul(t^t>>>15,t|1);
+  t^=t+Math.imul(t^t>>>7,t|61);return ((t^t>>>14)>>>0)/4294967296;};
+const gauss=(s)=>s*Math.sqrt(-2*Math.log(Math.max(1e-12,rnd())))*Math.cos(2*Math.PI*rnd());
+const cross=(a,b)=>{const c={};for(const t of TR)c[t]=Math.max(0,Math.min(100,(a[t]+b[t])/2+gauss(8)));
+  if(rnd()<.005)c.gag=["빛나는","말하는","고양이","사각형"][Math.floor(rnd()*4)];
+  else if(a.gag||b.gag)c.gag=a.gag||b.gag; return c;};
+const CODEX=[["흙감자",t=>t.starch<40],["분질감자",t=>t.starch>=70],
+  ["점질감자",t=>t.starch<40&&t.yield_>=70],["명주감자",t=>t.starch>=85&&t.solanine<=15],
+  ["무독감자",t=>t.solanine<=5],["강건감자",t=>t.disease>=80],["거대감자",t=>t.yield_>=90],
+  ["구형감자",t=>t.form>=90],["괴감자",t=>t.form<=15],["우주감자",t=>t.space>=50]];
+const entries=t=>{const n=CODEX.filter(c=>c[1](t)).map(c=>c[0]); if(t.gag)n.push(t.gag+" 감자"); return n;};
+const uglyScore=t=>Math.min(100,.8*(100-t.form)+(t.yield_>50?Math.min(20,(t.yield_-50)*.4):0));
+const RAR={"흙감자":1,"분질감자":2,"점질감자":3,"강건감자":4,"거대감자":4,"명주감자":5,
+  "구형감자":6,"괴감자":6,"무독감자":8,"우주감자":10};
+
+const NEWS=[
+  "오늘, 3대 감자 은행 총재가 자신을 삶았습니다.",
+  "고구마국 대변인: '우리는 더 달다.' 감자국 전역 분노.",
+  "학계, 감자 점(占)에 대한 반박 성명 발표. 점집은 '그럴 줄 알았다'.",
+  "총리실, 감자 한 알의 행방을 묻는 질의에 '그 감자는 먹었다'고 답했습니다.",
+  "기상청: 오늘 밤 전국에 흙비. 감자들이 좋아합니다.",
+];
+const NEWS_POWER="전력난으로 감자 전지소 3호기가 간식으로 소비되었습니다.";
+const NEWS_SPROUT="창고 감자에서 싹이 관측되었습니다. 솔라닌 주의보 발령.";
+const NEWS_SELL="국고에 자루가 들어왔습니다. 총리의 표정이 밝습니다.";
+
+const BASE={starch:30,yield_:35,disease:30,solanine:40,form:35,space:0};
+const S={
+  lv:{farm:1,mill:1,brew:1,power:1},
+  inv:{potato:220,starch:0,sprout:30,beer:0},
+  al:0, t:6*3600, speed:600, tab:"brewery",
+  cult:[{...BASE,name:"흙감자 1호"},{...BASE,name:"흙감자 2호"}],
+  sel:[], recipe:null, codex:["흙감자"], news:NEWS[0], lastSell:0, flash:"",
+};
+try{const raw=localStorage.getItem("gamza.proto.v1");
+  if(raw){const o=JSON.parse(raw); Object.assign(S,o); S.speed=o.speed||60;}}catch(e){}
+const save=()=>{try{localStorage.setItem("gamza.proto.v1",JSON.stringify(S));}catch(e){}};
+
+const $=s=>document.querySelector(s);
+const fmt=(n,d=0)=>n.toLocaleString("ko-KR",{minimumFractionDigits:d,maximumFractionDigits:d});
+const sack=n=>fmt(n/1000,1);
+const slack=()=>C.POWER_SUPPLY*S.lv.power-(C.MILL_POWER*S.lv.mill+C.BREW_POWER*S.lv.brew);
+const bestQ=()=>S.recipe?S.recipe.q:0;
+const ecoGrade=()=>S.recipe?delegated(S.recipe.q)[0]:"C";   // 위임 산출 등급으로 판다
+
+function tick(dt,offline){
+  const live=slack()>=0, inv=S.inv, lv=S.lv;
+  inv.potato+=C.FARM_RATE*lv.farm*(1+S.cult[0].yield_/200)*dt;
+  inv.potato=Math.max(0,inv.potato-C.POWER_POTATO*lv.power*dt);
+  if(live){
+    const take=Math.min(C.MILL_IN*lv.mill*dt,Math.max(0,inv.potato-C.MILL_FLOOR));
+    inv.potato-=take; inv.starch+=take/2;
+    const can=Math.min(C.BREW_RATE*lv.brew*dt, inv.starch/C.STARCH_PER_BEER,
+                       inv.sprout/C.SPROUT_PER_BEER, S.recipe?Infinity:0);
+    inv.starch-=can*C.STARCH_PER_BEER; inv.sprout-=can*C.SPROUT_PER_BEER; inv.beer+=can;
+  }
+  let s=inv.potato*C.SPROUT_RATE_H*dt/3600;
+  if(offline){s=Math.min(s,S._budget||0); S._budget=(S._budget||0)-s;}
+  inv.potato-=s; inv.sprout+=s;
+  for(const k in C.STORE) inv[k]=Math.min(inv[k],C.STORE[k]);
+  S.t+=dt;
+}
+
+function sell(){
+  const m=marketMult(S.t/3600);
+  let got=S.inv.beer*C.PRICE.beer*C.GRADE_MULT[ecoGrade()]*m;
+  S.inv.beer=0;
+  for(const k of ["potato","starch"]){
+    const ex=Math.max(0,S.inv[k]-C.KEEP[k]);
+    got+=ex*C.PRICE[k]*m; S.inv[k]-=ex;
+  }
+  S.al+=got; S.lastSell=got;
+  if(got>0){S.news=NEWS_SELL; S.flash="+"+sack(got)+"자루";}
+  save(); render();
+}
+
+/* ── 렌더 ─────────────────────────────────────────────── */
+const LINES={farm:["감자밭","감자"],mill:["전분 방앗간","전분"],brew:["감자양조장","맥주"],power:["감자 전지소","전력"]};
+function prod(k){
+  if(k==="farm")return fmt(C.FARM_RATE*S.lv.farm*(1+S.cult[0].yield_/200),1)+" /s";
+  if(k==="mill")return fmt(C.MILL_IN*S.lv.mill/2,2)+" /s";
+  if(k==="brew")return fmt(C.BREW_RATE*S.lv.brew,2)+" 병/s";
+  return fmt(C.POWER_SUPPLY*S.lv.power,0)+" 공급";
+}
+function rowsFor(keys,tbody){
+  tbody.innerHTML=keys.map(k=>{
+    const lv=S.lv[k], max=lv>=C.MAX_LV, c=cost(k,lv);
+    return `<tr data-up="${k}" class="${S.selLine===k?"sel":""}">
+      <td>${LINES[k][0]}</td><td>Lv${lv}</td><td class="r num">${prod(k)}</td>
+      <td class="r num" style="color:${!max&&S.al>=c?"var(--sprout)":"var(--ink-2)"}">
+        ${max?"최대":sack(c)+"자루"}</td></tr>`;
+  }).join("");
+}
+function render(){
+  const m=marketMult(S.t/3600);
+  $("#h-al").textContent=sack(S.al);
+  $("#h-mkt").textContent=(m>=1?"▲":"▼")+m.toFixed(2);
+  $("#h-mkt").style.color=m>=1?"var(--sprout)":"var(--solanine)";
+  const sl=slack(), use=C.MILL_POWER*S.lv.mill+C.BREW_POWER*S.lv.brew;
+  $("#h-pow").textContent=fmt(use)+"/"+fmt(C.POWER_SUPPLY*S.lv.power);
+  $("#h-powbar").className="bar"+(sl<0?" warn":"");
+  $("#h-powbar").firstElementChild.style.width=Math.min(100,use/(C.POWER_SUPPLY*S.lv.power)*100)+"%";
+  $("#h-q").textContent=bestQ().toFixed(1)+"/90";
+  $("#h-qbar").firstElementChild.style.width=Math.min(100,bestQ()/90*100)+"%";
+  const d=Math.floor(S.t/86400)+1, hh=Math.floor(S.t%86400/3600), mm=Math.floor(S.t%3600/60);
+  $("#h-day").textContent=`D+${d} ${String(hh).padStart(2,"0")}:${String(mm).padStart(2,"0")}`;
+  $("#h-speed").textContent="속도 ×"+S.speed;
+
+  if(S.tab==="field"){
+    rowsFor(["farm","power"],$("#t-farm"));
+    const warn=S.inv.sprout>C.STORE.sprout*.7;
+    $("#t-store").innerHTML=[["감자","potato"],["싹난 감자","sprout"],["전분","starch"],["맥주","beer"]]
+      .map(([n,k])=>{
+        const pct=S.inv[k]/C.STORE[k]*100, near=pct>88;
+        return `<tr><td>${n}${k==="sprout"&&warn?' <span class="warn">⚠️</span>':""}</td>
+          <td class="r num" style="color:${near?"var(--solanine)":"inherit"}">
+          ${fmt(S.inv[k],k==="beer"?1:0)} / ${fmt(C.STORE[k])}${near?" (만재)":""}</td></tr>`;
+      }).join("");
+    $("#s-harvest").textContent=S.flash||(S.inv.beer>0?fmt(S.inv.beer,1)+"병 대기":"맥주가 없다");
+  }
+  if(S.tab==="brewery"){
+    rowsFor(["mill","brew"],$("#t-line"));
+    $("#deleg").innerHTML=S.recipe
+      ?`<div class="kv"><span>${S.recipe.name} · 등록 품질</span>
+          <span><span class="grade" style="color:var(--gold)">${grade(S.recipe.q)}</span>
+          <span class="num">${S.recipe.q.toFixed(1)}</span></span></div>
+        <div class="kv"><span>위임 산출 (숙련도와 무관)</span>
+          <span><span class="grade">${delegated(S.recipe.q)[0]}</span>
+          <span class="num">${delegated(S.recipe.q)[1].toFixed(0)}</span></span></div>
+        <div style="color:var(--ink-2); font-size:11.5px; margin-top:6px">
+          스퍼드 감자탕(양조 숙련 7)이 이 레시피로 자동 생산 중. 숙련도는 속도만 올린다.</div>`
+      :`<div class="warn">등록된 레시피가 없다. 직접 양조해야 라인이 돈다.</div>`;
+  }
+  if(S.tab==="codex"){
+    $("#t-cult").innerHTML=S.cult.map((c,i)=>
+      `<tr data-cult="${i}" class="${S.sel.includes(i)?"sel":""}">
+        <td>${c.name}${c.gag?` <span class="chip on">${c.gag}</span>`:""}</td>
+        <td class="r num">${c.starch.toFixed(0)}</td><td class="r num">${c.solanine.toFixed(0)}</td>
+        <td class="r num">${c.form.toFixed(0)}</td><td class="r num">${c.yield_.toFixed(0)}</td></tr>`).join("");
+    $("#c-count").textContent=S.codex.length+" / 10";
+    $("#c-list").innerHTML=CODEX.map(([n])=>
+      `<span class="chip ${S.codex.includes(n)?"on":""}">${S.codex.includes(n)?n:"⬚ "+n}</span>`).join("")
+      +S.codex.filter(n=>!RAR[n]).map(n=>`<span class="chip on">${n}</span>`).join("");
+    const myUgly=Math.max(...S.cult.map(uglyScore));
+    const myCodex=S.codex.reduce((s,n)=>s+(RAR[n]||15),0);
+    const board=[["명주 장인",bestQ(),88.4,"점"],["괴감자 소유자",myUgly,71.2,"점"],["감자 도감왕",myCodex,24,"점"]];
+    $("#t-oly").innerHTML=board.map(([n,mine,npc,u])=>
+      `<tr><td>${n}</td><td class="r num">${fmt(mine,1)}${u}</td>
+        <td class="r num" style="color:var(--ink-2)">1위 ${fmt(npc,1)}</td>
+        <td class="r">${mine>npc?'<span class="chip on">🏅 1위</span>':'<span class="chip">2위</span>'}</td></tr>`).join("");
+  }
+  renderPanel();
+  $("#news").innerHTML=S.news;
+  $("#l-al").innerHTML=sack(S.al)+'<span style="font-size:18px"> 자루</span>';
+  $("#l-sub").textContent=`맥주 ${fmt(S.inv.beer,1)}병 대기 · 시세 ${m.toFixed(2)}배`;
+  $("#l-warn").textContent=slack()<0?"⚠️ 전력 부족 — 라인 정지":
+    (S.inv.sprout>C.STORE.sprout*.7?"⚠️ 싹난 감자 창고 만재 임박":"");
+  $("#l-news").innerHTML="📰 "+S.news;
+}
+function renderPanel(){
+  const p=$("#panel");
+  if(S.tab==="field"){
+    const k=S.selLine||"farm", lv=S.lv[k], c=cost(k,lv), warn=S.inv.sprout>C.STORE.sprout*.7;
+    p.innerHTML=`<p class="eyebrow">선택 대상</p>
+      <h2 style="margin:0 0 8px; font-size:17px">${LINES[k][0]} Lv${lv}</h2>
+      <div class="kv"><span>산출</span><span class="num">${prod(k)}</span></div>
+      <div class="kv"><span>다음 등급</span><span class="num">${lv>=C.MAX_LV?"최대":"Lv"+(lv+1)}</span></div>
+      <div class="kv"><span>증설비</span><span class="num">${lv>=C.MAX_LV?"—":sack(c)+"자루"}</span></div>
+      <div class="row" style="margin-top:10px">
+        <button class="act" id="b-up" ${lv>=C.MAX_LV||S.al<c?"disabled":""}>증설 결재</button></div>
+      ${k==="power"?`<div style="font-size:11.5px; color:var(--ink-2); margin-top:8px">
+        전지소는 감자 ${fmt(C.POWER_POTATO*lv,1)}/s를 먹는다. 전력이 밭과 경쟁한다.</div>`:""}
+      ${warn?`<hr style="border:none;border-top:1px solid var(--line); margin:12px 0">
+        <p class="eyebrow warn">⚠️ 싹난 감자 ${fmt(S.inv.sprout)}개</p>
+        <div style="font-size:11.5px; color:var(--ink-2); margin-bottom:8px">
+          촉진제로 두면 양조 재료, 심으면 감자가 된다. 창고가 차면 버려진다.</div>
+        <button class="act ghost" id="b-plant">씨감자로 심기 (100 → 감자 300)</button>`:""}`;
+    if($("#b-up"))$("#b-up").onclick=()=>{if(S.al>=c){S.al-=c;S.lv[k]++;save();render();}};
+    if($("#b-plant"))$("#b-plant").onclick=()=>{
+      if(S.inv.sprout>=100){S.inv.sprout-=100;S.inv.potato=Math.min(C.STORE.potato,S.inv.potato+300);save();render();}};
+  } else if(S.tab==="brewery"){
+    const c=S.cult[0], cl=ceiling(c.starch,c.solanine,S.lv.brew);
+    p.innerHTML=`<p class="eyebrow">품질 천장</p>
+      <div class="kv"><span>품종 ${c.name}</span><span class="num">전분 ${c.starch.toFixed(0)}</span></div>
+      <div class="kv"><span>솔라닌</span><span class="num">${c.solanine.toFixed(0)}</span></div>
+      <div class="kv"><span>양조장</span><span class="num">Lv${S.lv.brew}</span></div>
+      <div class="kv"><span><b>이 조합의 천장</b></span><span class="num" style="color:var(--gold)"><b>${cl.toFixed(1)}</b></span></div>
+      <div style="font-size:11.5px; color:var(--ink-2); margin-top:8px">
+        천장 = 60 + 0.20×전분 + 0.10×(100−솔라닌) + 1.0×Lv.<br>
+        S(90)를 보려면 교배로 천장을 올려야 한다. 100점은 완벽한 감자(4막)만 가능하다.</div>
+      <hr style="border:none;border-top:1px solid var(--line); margin:12px 0">
+      <div class="kv"><span>전력 여유</span><span class="num ${slack()<0?"warn":"ok"}">${fmt(slack(),1)}</span></div>
+      ${slack()<0?'<div class="warn" style="font-size:11.5px">라인 정지 — 전지소를 먼저 증설해야 한다</div>':""}`;
+  } else {
+    const i=S.sel[S.sel.length-1];
+    const c=i!=null?S.cult[i]:S.cult[0];
+    p.innerHTML=`<p class="eyebrow">선택 품종</p>
+      <h2 style="margin:0 0 8px; font-size:17px">${c.name}</h2>
+      ${[["전분율","starch"],["수확량","yield_"],["내병성","disease"],["솔라닌","solanine"],
+         ["형태 완전성","form"],["우주 적응","space"]].map(([n,k])=>
+        `<div class="kv"><span>${n}</span><span class="num">${c[k].toFixed(0)}</span></div>`).join("")}
+      <div class="kv"><span>양조 천장</span><span class="num" style="color:var(--gold)">${ceiling(c.starch,c.solanine,S.lv.brew).toFixed(1)}</span></div>
+      <div class="kv"><span>못생김 점수</span><span class="num">${uglyScore(c).toFixed(1)}</span></div>
+      <div style="font-size:11.5px; color:var(--ink-2); margin-top:8px">도감: ${entries(c).join(", ")}</div>
+      <div style="font-size:11.5px; color:var(--ink-2); margin-top:10px">
+        교배 = 부모 평균 + 변이(σ=8). 변이가 유일한 개량 엔진이다.</div>`;
+  }
+}
+
+/* ── 미니게임 ─────────────────────────────────────────── */
+let G={on:false};
+function openGame(){
+  const c=S.cult[0];
+  G={on:true, cult:c, tg:targetMix(c.starch)};
+  $("#line").hidden=true; $("#game").classList.add("on");
+  $("#g-cult").textContent=c.name;
+  $("#g-ceil").textContent=ceiling(c.starch,c.solanine,S.lv.brew).toFixed(1);
+  for(let i=0;i<3;i++){
+    const g=$("#goal"+i), tol=.3;
+    g.style.left=Math.max(0,(G.tg[i]-tol/3)*100)+"%";
+    g.style.width=Math.min(100,(tol/1.5)*100)+"%";
+  }
+  gameUpdate();
+}
+function gameUpdate(){
+  const raw=[0,1,2].map(i=>+$("#sl"+i).value);
+  const sum=raw.reduce((a,b)=>a+b,0)||1;
+  const mix=raw.map(v=>v/sum);
+  mix.forEach((v,i)=>$("#v"+i).textContent=(v*100).toFixed(0)+"%");
+  const fh=+$("#slf").value; $("#vf").textContent=fh.toFixed(1)+"h";
+  const len=$("#g-lenient").checked;
+  const ach=achievement(mix,G.tg,fh,72,len);
+  const q=ceiling(G.cult.starch,G.cult.solanine,S.lv.brew)*ach;
+  $("#g-ach").textContent=(ach*100).toFixed(0)+"%";
+  $("#g-meter").firstElementChild.style.width=Math.min(100,q)+"%";
+  $("#g-q").textContent=q.toFixed(1)+" ("+grade(q)+")";
+  $("#g-q").style.color=q>=90?"var(--gold)":q>=75?"var(--sprout)":"inherit";
+  G.q=q; G.mix=mix; G.fh=fh;
+}
+function closeGame(){G.on=false; $("#game").classList.remove("on"); $("#line").hidden=false; render();}
+function submitRecipe(){
+  if(!S.recipe||G.q>S.recipe.q){
+    S.recipe={name:G.cult.name+" 레시피",q:G.q,mix:G.mix,fh:G.fh};
+  }
+  const g=grade(G.q);
+  $("#stamp-g").textContent=g;
+  $("#stamp").classList.add("go");
+  setTimeout(()=>$("#stamp").classList.remove("go"),900);
+  S.news=`총리가 직접 빚은 맥주가 품질 ${G.q.toFixed(1)}(${g})으로 등록되었습니다.`;
+  save(); closeGame();
+}
+
+/* ── 입력 ─────────────────────────────────────────────── */
+document.querySelectorAll("#rail button").forEach(b=>b.onclick=()=>{
+  S.tab=b.dataset.tab;
+  document.querySelectorAll("#rail button").forEach(x=>x.setAttribute("aria-selected",x===b));
+  document.querySelectorAll("[data-view]").forEach(v=>v.hidden=v.dataset.view!==S.tab);
+  if(G.on)closeGame(); render();
+});
+$("#main").addEventListener("click",e=>{
+  const up=e.target.closest("[data-up]"); if(up){S.selLine=up.dataset.up; render(); return;}
+  const cu=e.target.closest("[data-cult]");
+  if(cu){const i=+cu.dataset.cult;
+    S.sel=S.sel.includes(i)?S.sel.filter(x=>x!==i):[...S.sel,i].slice(-2); render();}
+});
+$("#b-harvest").onclick=sell; $("#l-harvest").onclick=sell;
+$("#b-play").onclick=openGame; $("#b-cancel").onclick=closeGame; $("#b-submit").onclick=submitRecipe;
+["sl0","sl1","sl2","slf","g-lenient"].forEach(id=>{
+  $("#"+id).addEventListener("input",gameUpdate);
+  $("#"+id).addEventListener("change",gameUpdate);
+});
+$("#b-breed").onclick=()=>{
+  if(S.sel.length<2){$("#s-breed").textContent="두 알을 골라야 한다"; return;}
+  const [a,b]=S.sel.map(i=>S.cult[i]);
+  const ch=cross(a,b); ch.name="교배 "+(S.cult.length-1)+"호";
+  S.cult.push(ch);
+  if(S.cult.length>8)S.cult.splice(2,1);
+  S.cult.sort((x,y)=>(0.2*y.starch+0.1*(100-y.solanine))-(0.2*x.starch+0.1*(100-x.solanine)));
+  for(const n of entries(ch)) if(!S.codex.includes(n)) S.codex.push(n);
+  S.sel=[]; $("#s-breed").textContent=ch.name+" 획득 — 전분 "+ch.starch.toFixed(0);
+  S.news=`새 품종 ${ch.name}이 등록되었습니다. 전분율 ${ch.starch.toFixed(0)}.`;
+  save(); render();
+};
+$("#h-speed").onclick=()=>{S.speed=S.speed===1?60:S.speed===60?600:1; save(); render();};
+
+/* 오프라인 정산 — 틱 루프가 아니라 닫힌 정산 1회 (상한 12h, 싹은 창 예산 30%) */
+let last=Date.now();
+function settle(){
+  const gapH=Math.min((Date.now()-last)/3.6e6*S.speed,C.OFFLINE_CAP_H);
+  if(gapH>0.05){
+    S._budget=S.inv.potato*C.OFFLINE_SPROUT_CAP;
+    const n=Math.ceil(gapH*60); for(let i=0;i<n;i++) tick(gapH*3600/n,true);
+  }
+  last=Date.now();
+}
+document.addEventListener("visibilitychange",()=>{if(document.hidden)last=Date.now();else{settle();render();}});
+
+setInterval(()=>{
+  const dt=S.speed; tick(dt,false);
+  if(Math.random()<.004){
+    S.news=slack()<0?NEWS_POWER:S.inv.sprout>C.STORE.sprout*.7?NEWS_SPROUT
+      :NEWS[Math.floor(Math.random()*NEWS.length)];
+  }
+  S.flash="";
+  render();
+},1000);
+setInterval(save,5000);
+settle(); render();
+</script>
