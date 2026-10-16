@@ -659,5 +659,8 @@ setInterval(()=>{
   render();
 },1000);
 setInterval(save,5000);
+/* 저장된 탭을 DOM에 맞춘다 — 새로고침하면 패널만 도감이고 본문은 양조장이었다 */
+document.querySelectorAll("#rail button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===S.tab));
+document.querySelectorAll("[data-view]").forEach(v=>v.hidden=v.dataset.view!==S.tab);
 settle(); render();
 </script>
