@@ -410,17 +410,25 @@ function prod(k){
   if(k==="brew")return fmt(C.BREW_RATE*S.lv.brew,2)+" 병/s";
   return fmt(C.POWER_SUPPLY*S.lv.power,0)+" 공급";
 }
+/* 1초마다 innerHTML을 갈아끼우므로 포커스가 날아간다. 같은 행에 되돌려준다.
+   ponytail: 행 단위 diff 대신 복원. 표가 길어져 깜빡임이 보이면 그때 쪼갠다. */
+function keepFocus(el,paint){
+  const a=document.activeElement, inside=el.contains(a);
+  const k=inside?(a.id||a.dataset.cult||a.dataset.up||null):null;
+  paint();
+  if(k==null)return;
+  const r=el.querySelector(`[data-cult="${k}"]`)||el.querySelector(`[data-up="${k}"]`)
+        ||(/^[\w-]+$/.test(k)?el.querySelector("#"+k):null);
+  if(r)r.focus({preventScroll:true});
+}
 function rowsFor(keys,tbody){
-  // ponytail: 포커스가 안에 있으면 통째 갱신을 건너뛴다(그 표만 잠깐 멈춤).
-  //           행 단위 diff가 필요해지면 그때 쪼갠다.
-  if(tbody.contains(document.activeElement))return;
-  tbody.innerHTML=keys.map(k=>{
+  keepFocus(tbody,()=>{tbody.innerHTML=keys.map(k=>{
     const lv=S.lv[k], max=lv>=C.MAX_LV, c=cost(k,lv);
     return `<tr data-up="${k}" tabindex="0" class="${S.selLine===k?"sel":""}">
       <td>${LINES[k][0]}</td><td>Lv${lv}</td><td class="r num">${prod(k)}</td>
       <td class="r num" style="color:${!max&&S.al>=c?"var(--ok-ink)":"var(--ink-2)"}">
         ${max?"최대":sack(c)+"자루"}</td></tr>`;
-  }).join("");
+  }).join("");});
 }
 function render(){
   const m=marketMult(S.t/3600);
@@ -463,12 +471,11 @@ function render(){
       :`<div class="warn">등록된 레시피가 없다. 직접 양조해야 라인이 돈다.</div>`;
   }
   if(S.tab==="codex"){
-    if(!$("#t-cult").contains(document.activeElement))
-    $("#t-cult").innerHTML=S.cult.map((c,i)=>
+    keepFocus($("#t-cult"),()=>{$("#t-cult").innerHTML=S.cult.map((c,i)=>
       `<tr data-cult="${i}" tabindex="0" class="${S.sel.includes(i)?"sel":""}">
         <td>${c.name}${c.gag?` <span class="chip on">${c.gag}</span>`:""}</td>
         <td class="r num">${c.starch.toFixed(0)}</td><td class="r num">${c.solanine.toFixed(0)}</td>
-        <td class="r num">${c.form.toFixed(0)}</td><td class="r num">${c.yield_.toFixed(0)}</td></tr>`).join("");
+        <td class="r num">${c.form.toFixed(0)}</td><td class="r num">${c.yield_.toFixed(0)}</td></tr>`).join("");});
     $("#c-count").textContent=S.codex.length+" / 10";
     $("#c-list").innerHTML=CODEX.map(([n])=>
       `<span class="chip ${S.codex.includes(n)?"on":""}">${S.codex.includes(n)?n:"⬚ "+n}</span>`).join("")
@@ -491,7 +498,7 @@ function render(){
 }
 function renderPanel(){
   const p=$("#panel");
-  if(p.contains(document.activeElement))return;
+  const _a=document.activeElement, _k=p.contains(_a)?_a.id:null;
   if(S.tab==="field"){
     const k=S.selLine||"farm", lv=S.lv[k], c=cost(k,lv), warn=S.inv.sprout>C.STORE.sprout*.7;
     p.innerHTML=`<p class="eyebrow">선택 대상</p>
@@ -508,11 +515,9 @@ function renderPanel(){
         <div style="font-size:11.5px; color:var(--ink-2); margin-bottom:8px">
           촉진제로 두면 양조 재료, 심으면 감자가 된다. 창고가 차면 버려진다.</div>
         <button class="act ghost" id="b-plant">씨감자로 심기 (100 → 감자 300)</button>`:""}`;
-    if($("#b-up"))$("#b-up").onclick=()=>{if(S.al>=c){S.al-=c;S.lv[k]++;save();
-      document.activeElement.blur(); render(); if($("#b-up"))$("#b-up").focus();}};
+    if($("#b-up"))$("#b-up").onclick=()=>{if(S.al>=c){S.al-=c;S.lv[k]++;save();render();}};
     if($("#b-plant"))$("#b-plant").onclick=()=>{
-      if(S.inv.sprout>=100){S.inv.sprout-=100;S.inv.potato=Math.min(C.STORE.potato,S.inv.potato+300);save();
-        document.activeElement.blur(); render(); if($("#b-plant"))$("#b-plant").focus();}};
+      if(S.inv.sprout>=100){S.inv.sprout-=100;S.inv.potato=Math.min(C.STORE.potato,S.inv.potato+300);save();render();}};
   } else if(S.tab==="brewery"){
     const c=S.cult[0], cl=ceiling(c.starch,c.solanine,S.lv.brew);
     p.innerHTML=`<p class="eyebrow">품질 천장</p>
@@ -540,6 +545,7 @@ function renderPanel(){
       <div style="font-size:11.5px; color:var(--ink-2); margin-top:10px">
         교배 = 부모 평균 + 변이(σ=8). 변이가 유일한 개량 엔진이다.</div>`;
   }
+  if(_k){const r=p.querySelector("#"+_k); if(r)r.focus({preventScroll:true});}
 }
 
 /* ── 미니게임 ─────────────────────────────────────────── */
