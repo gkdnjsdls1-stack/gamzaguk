@@ -175,9 +175,56 @@
   #lite .note{font-size:12px; color:var(--ink-2); border:1px dashed var(--line); padding:10px}
   #lite button.act{padding:20px; font-size:17px; width:100%;
     display:flex; align-items:center; justify-content:center; gap:12px}
-  #l-harvest svg{transition:transform .18s cubic-bezier(.2,1.4,.4,1); transform-origin:50% 80%}
-  #l-harvest:active svg{transform:rotate(-14deg) translateY(2px)}
-  @media (prefers-reduced-motion:reduce){#l-harvest svg{transition:none}}
+
+  /* ── 자루 털기 — 네모 버튼이 아니라 자루를 누른다 ─────────────── */
+  #l-harvest{background:none; color:var(--ink); padding:4px 0 10px;
+    flex-direction:column; gap:4px}
+  #l-harvest:focus-visible{outline:2px solid var(--skin); outline-offset:4px}
+  .sackwrap{position:relative; width:150px; height:150px; display:grid; place-items:center;
+    border-radius:50%; transition:background .15s}
+  #l-harvest:active .sackwrap{background:var(--stamp)}
+  .sack{width:132px; height:132px; fill:var(--gold); stroke:var(--ink); stroke-width:1.4;
+    stroke-linejoin:round; transform-origin:50% 50%;
+    transition:transform .15s cubic-bezier(.2,1.4,.4,1)}
+  .sack .tie{fill:none; stroke-width:2.4; stroke-linecap:round}
+  #l-harvest:active .sack{transform:scale(.93)}
+  .sacklabel{font-size:15px; letter-spacing:.08em; color:var(--ink-2)}
+
+  /* 뒤집어서 흔든다 */
+  @keyframes shakeout{
+    0%{transform:rotate(0) scale(1)}
+    12%{transform:rotate(-17deg) scale(.96)}
+    32%{transform:rotate(151deg)}
+    44%{transform:rotate(137deg)}
+    56%{transform:rotate(160deg)}
+    68%{transform:rotate(141deg)}
+    80%{transform:rotate(155deg)}
+    100%{transform:rotate(0) scale(1)}
+  }
+  .shaking .sack,.shaking .sackmini{animation:shakeout .68s cubic-bezier(.3,.9,.4,1) both}
+  /* 빈 자루는 쏟아지지 않고 흔들리기만 한다 */
+  @keyframes nope{0%,100%{transform:rotate(0)}25%{transform:rotate(-10deg)}60%{transform:rotate(8deg)}}
+  .empty .sack,.empty .sackmini{animation:nope .42s ease-in-out both}
+
+  /* 쏟아지는 감자 */
+  .drop{position:absolute; left:50%; top:58%; width:14px; height:11px; border-radius:50%;
+    background:var(--skin); opacity:0; pointer-events:none}
+  @keyframes dropout{
+    0%{opacity:0; transform:translate(-50%,0) scale(.5) rotate(0)}
+    25%{opacity:1}
+    100%{opacity:0; transform:translate(calc(-50% + var(--dx)),86px) scale(1) rotate(50deg)}
+  }
+  .shaking .drop{animation:dropout .52s ease-in both}
+  .shaking .drop:nth-of-type(1){animation-delay:.30s; --dx:-30px}
+  .shaking .drop:nth-of-type(2){animation-delay:.37s; --dx:2px}
+  .shaking .drop:nth-of-type(3){animation-delay:.43s; --dx:28px}
+  .shaking .drop:nth-of-type(4){animation-delay:.50s; --dx:-11px}
+  .sackmini{transform-origin:50% 50%}
+  @media (prefers-reduced-motion:reduce){
+    .shaking .sack,.shaking .sackmini,.empty .sack,.empty .sackmini{animation:none}
+    .shaking .drop{animation:none; opacity:0}
+    .sack{transition:none}
+  }
 </style>
 
 <h1 class="sr-only">감자국 관보</h1>
@@ -226,7 +273,7 @@
         <p class="eyebrow" style="margin-top:12px">제2호 서식 · 창고</p>
         <table><tbody id="t-store"></tbody></table>
         <div class="row" style="margin-top:12px">
-          <button class="act gold" id="b-harvest">자루 털기</button>
+          <button class="act gold" id="b-harvest"><svg class="i sackmini" aria-hidden="true"><use href="#i-sack"/></svg> 자루 털기</button>
           <span id="s-harvest" class="num" style="color:var(--ink-2)"></span>
         </div>
       </section>
@@ -307,11 +354,15 @@
   <main>
     <div style="flex:1"></div>
     <button class="act gold" id="l-harvest">
-      <svg viewBox="0 0 48 48" width="34" height="34" aria-hidden="true" focusable="false">
-        <path d="M19 8h10l-1.5 6c7.5 3.5 12.5 10 12.5 18 0 7-6.5 11-16 11S8 39 8 32c0-8 5-14.5 12.5-18z"
-              fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
-        <path d="M17.5 14.5h13" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
-      </svg>자루 털기</button>
+      <span class="sackwrap">
+        <svg class="sack" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+          <path d="M19 7.5h10l-1.6 6.3c7.8 3.6 13 10.2 13 18.2 0 7.2-6.7 11.5-16.4 11.5S7.6 39.2 7.6 32c0-8 5.2-14.6 13-18.2z"/>
+          <path class="tie" d="M17.3 14h13.4"/>
+          <path class="tie" d="M19.5 7.5c1.5 1.6 7.5 1.6 9 0" opacity=".55"/>
+        </svg>
+        <i class="drop"></i><i class="drop"></i><i class="drop"></i><i class="drop"></i>
+      </span>
+      <span class="sacklabel">자루 털기</span></button>
     <div id="l-warn" class="warn" style="font-size:13px"></div>
     <div class="note">
       본편은 <b>가로</b>다. 라인 편성·미니게임·교배는 기기를 돌려야 나온다.<br>
@@ -424,7 +475,19 @@ function sell(){
   }
   S.al+=got; S.lastSell=got;
   if(got>0){S.news=NEWS_SELL; S.flash="+"+sack(got)+"자루";}
+  shakeSack(got>0);
   save(); render();
+}
+
+/* 털리는 느낌은 모션이 만든다 — 빈 자루는 쏟아지지 않고 흔들리기만 */
+function shakeSack(got){
+  for(const id of ["l-harvest","b-harvest"]){
+    const b=$("#"+id); if(!b)continue;
+    b.classList.remove("shaking","empty");
+    void b.offsetWidth;                       // 리플로우 1회 = 애니메이션 재생 리셋
+    b.classList.add(got?"shaking":"empty");
+    setTimeout(()=>b.classList.remove("shaking","empty"), got?720:460);
+  }
 }
 
 /* ── 렌더 ─────────────────────────────────────────────── */
