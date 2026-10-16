@@ -29,6 +29,12 @@
   }
   *{box-sizing:border-box}
   html{-webkit-text-size-adjust:100%}
+  .i{width:1.15em; height:1.15em; flex:none; fill:none; stroke:currentColor;
+     stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; vertical-align:-.2em}
+  #hud .i{color:var(--ink-2); width:1.25em; height:1.25em}
+  #rail .i{width:22px; height:22px; stroke-width:1.6}
+  .sl label .i{width:17px; height:17px}
+  td .i{color:var(--ink-2); margin-right:6px}
   .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
   body{
     margin:0; background:var(--paper); color:var(--ink);
@@ -65,7 +71,7 @@
     display:flex; align-items:center; gap:18px; padding:0 14px;
     border-bottom:1px solid var(--line); background:var(--sack);
   }
-  #hud .slot{display:flex; align-items:baseline; gap:6px; white-space:nowrap}
+  #hud .slot{display:flex; align-items:center; gap:6px; white-space:nowrap}
   #hud .k{font-size:10px; letter-spacing:.14em; color:var(--ink-2); text-transform:uppercase}
   #hud .v{font-size:15px; font-weight:600}
   #hud .spacer{flex:1}
@@ -172,22 +178,38 @@
 </style>
 
 <h1 class="sr-only">감자국 관보</h1>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+  <symbol id="i-sack" viewBox="0 0 24 24"><path d="M9.5 3h5l-.8 3.2C17 7.9 19.5 11.1 19.5 15c0 3.4-3.2 5.5-7.5 5.5S4.5 18.4 4.5 15c0-3.9 2.5-7.1 5.8-8.8z"/><path d="M8.8 6.2h6.4"/></symbol>
+  <symbol id="i-market" viewBox="0 0 24 24"><path d="M3 17l5.5-5.5 3.5 3.5L21 6"/><path d="M15 6h6v6"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2.5L4.5 13.5H11L10 21.5 18.5 10.5H12z"/></symbol>
+  <symbol id="i-beer" viewBox="0 0 24 24"><path d="M5.5 8.5h9.5v11H5.5z"/><path d="M15 11h2.8a2.2 2.2 0 0 1 0 5.5H15"/><path d="M5.5 8.5c0-1.8 1.2-2.8 2.7-2.8.6-1.6 3.5-1.6 4.1 0 1.5 0 2.7 1 2.7 2.8"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5.4l3.4 2"/></symbol>
+  <symbol id="i-sprout" viewBox="0 0 24 24"><path d="M12 21v-7.2"/><path d="M12 14C12 9.4 8.6 7 4.3 7c0 4.3 2.9 7 7.7 7z"/><path d="M12 13.2c0-3.9 2.9-6.3 6.8-6.3 0 3.9-2.4 6.3-6.8 6.3z"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M3.5 4.5h6A2.5 2.5 0 0 1 12 7v12.5a2.2 2.2 0 0 0-2.2-1.5H3.5z"/><path d="M20.5 4.5h-6A2.5 2.5 0 0 0 12 7v12.5a2.2 2.2 0 0 1 2.2-1.5h6.3z"/></symbol>
+  <symbol id="i-news" viewBox="0 0 24 24"><path d="M3 5.5h14.5v13H5a2 2 0 0 1-2-2z"/><path d="M17.5 9.5H21v7a2 2 0 0 1-3.5 1.3"/><path d="M6 9.5h8M6 12.5h8M6 15.5h5"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 3.6L21.4 20H2.6z"/><path d="M12 9.6v4.8"/><path d="M12 17.3h.01"/></symbol>
+  <symbol id="i-medal" viewBox="0 0 24 24"><circle cx="12" cy="15.2" r="5.8"/><path d="M9.2 9.9L6.2 2.6M14.8 9.9l3-7.3"/></symbol>
+  <symbol id="i-potato" viewBox="0 0 24 24"><path d="M15.4 4C9.2 4 3.6 9.1 3.6 14.6c0 3.3 2.3 5.4 5.4 5.4 6 0 11.4-5.4 11.4-11C20.4 5.9 18.5 4 15.4 4z"/></symbol>
+  <symbol id="i-starch" viewBox="0 0 24 24"><path d="M3.8 12.2h16.4c0 4.5-3.7 8-8.2 8s-8.2-3.5-8.2-8z"/><path d="M8 8.6h.01M12 6.2h.01M16 8.6h.01"/></symbol>
+  <symbol id="i-water" viewBox="0 0 24 24"><path d="M12 3.4S5.4 11 5.4 15a6.6 6.6 0 0 0 13.2 0c0-4-6.6-11.6-6.6-11.6z"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.6"/><path d="M10.2 8.4l5.8 3.6-5.8 3.6z"/></symbol>
+</defs></svg>
 <div id="frame">
   <div id="hud">
-    <div class="slot"><span class="k">국고</span><span class="v num" id="h-al">0</span><span class="k">자루</span></div>
-    <div class="slot"><span class="k">시세</span><span class="v num" id="h-mkt">1.00</span></div>
-    <div class="slot"><span class="k">전력</span><span class="v num" id="h-pow">7/6</span><span class="bar" id="h-powbar"><i></i></span></div>
-    <div class="slot"><span class="k">명주</span><span class="bar gold" id="h-qbar"><i></i></span><span class="v num" id="h-q">0/90</span></div>
+    <div class="slot" title="국고(자루)"><svg class="i" role="img" aria-label="국고"><use href="#i-sack"/></svg><span class="v num" id="h-al">0</span></div>
+    <div class="slot" title="시세"><svg class="i" role="img" aria-label="시세"><use href="#i-market"/></svg><span class="v num" id="h-mkt">1.00</span></div>
+    <div class="slot" title="전력"><svg class="i" role="img" aria-label="전력"><use href="#i-bolt"/></svg><span class="v num" id="h-pow">7/6</span><span class="bar" id="h-powbar"><i></i></span></div>
+    <div class="slot" title="명주 품질"><svg class="i" role="img" aria-label="명주 품질"><use href="#i-beer"/></svg><span class="bar gold" id="h-qbar"><i></i></span><span class="v num" id="h-q">0/90</span></div>
     <div class="spacer"></div>
-    <div class="slot"><span class="k">경과</span><span class="v num" id="h-day">D+1 06:00</span></div>
+    <div class="slot" title="경과 시간"><svg class="i" role="img" aria-label="경과 시간"><use href="#i-clock"/></svg><span class="v num" id="h-day">D+1 06:00</span></div>
     <div class="slot"><button class="act ghost" id="h-speed">속도 ×60</button></div>
   </div>
 
   <div id="body">
     <div id="rail" role="tablist">
-      <button role="tab" data-tab="field" aria-selected="false" aria-controls="v-field" aria-label="밭" title="밭">🌱</button>
-      <button role="tab" data-tab="brewery" aria-selected="true" aria-controls="v-brewery" aria-label="양조장" title="양조장">🍺</button>
-      <button role="tab" data-tab="codex" aria-selected="false" aria-controls="v-codex" aria-label="도감" title="도감">📖</button>
+      <button role="tab" data-tab="field" aria-selected="false" aria-controls="v-field" aria-label="밭" title="밭"><svg class="i" aria-hidden="true"><use href="#i-sprout"/></svg></button>
+      <button role="tab" data-tab="brewery" aria-selected="true" aria-controls="v-brewery" aria-label="양조장" title="양조장"><svg class="i" aria-hidden="true"><use href="#i-beer"/></svg></button>
+      <button role="tab" data-tab="codex" aria-selected="false" aria-controls="v-codex" aria-label="도감" title="도감"><svg class="i" aria-hidden="true"><use href="#i-book"/></svg></button>
     </div>
 
     <div id="main">
@@ -214,7 +236,7 @@
           <p class="eyebrow" style="margin-top:12px">위임 (D10 · 품질 1등급 하락 고정)</p>
           <div id="deleg" style="font-size:12.5px"></div>
           <div class="row" style="margin-top:12px">
-            <button class="act" id="b-play">🎮 직접 양조하기</button>
+            <button class="act" id="b-play"><svg class="i" aria-hidden="true"><use href="#i-play"/></svg> 직접 양조하기</button>
             <span style="color:var(--ink-2); font-size:11.5px">직접 플레이 = 천장을 올리는 행위</span>
           </div>
           <p style="margin:10px 0 0; font-size:11.5px; color:var(--ink-2); max-width:62ch">
@@ -228,12 +250,12 @@
             품종 <b id="g-cult" style="color:var(--skin)"></b> · 초록 구간이 이 품종의 목표 배합이다
           </div>
           <div class="sliders">
-            <div class="sl"><label for="sl0">전분</label><div class="track"><div class="goal" id="goal0"></div><input type="range" id="sl0" min="0" max="100" value="33"></div><span class="v num" id="v0">33%</span></div>
-            <div class="sl"><label for="sl1">물</label><div class="track"><div class="goal" id="goal1"></div><input type="range" id="sl1" min="0" max="100" value="33"></div><span class="v num" id="v1">33%</span></div>
-            <div class="sl"><label for="sl2">촉진제 (싹난 감자)</label><div class="track"><div class="goal" id="goal2"></div><input type="range" id="sl2" min="0" max="100" value="34"></div><span class="v num" id="v2">34%</span></div>
+            <div class="sl"><label for="sl0" title="전분"><svg class="i" aria-hidden="true"><use href="#i-starch"/></svg><span class="sr-only">전분</span></label><div class="track"><div class="goal" id="goal0"></div><input type="range" id="sl0" min="0" max="100" value="33"></div><span class="v num" id="v0">33%</span></div>
+            <div class="sl"><label for="sl1" title="물"><svg class="i" aria-hidden="true"><use href="#i-water"/></svg><span class="sr-only">물</span></label><div class="track"><div class="goal" id="goal1"></div><input type="range" id="sl1" min="0" max="100" value="33"></div><span class="v num" id="v1">33%</span></div>
+            <div class="sl"><label for="sl2" title="촉진제 (싹난 감자)"><svg class="i" aria-hidden="true"><use href="#i-sprout"/></svg><span class="sr-only">촉진제 (싹난 감자)</span></label><div class="track"><div class="goal" id="goal2"></div><input type="range" id="sl2" min="0" max="100" value="34"></div><span class="v num" id="v2">34%</span></div>
           </div>
           <div class="sl" style="margin:10px 0">
-            <label for="slf">발효 시간 — 목표 72h ±2h</label>
+            <label for="slf" title="발효 시간"><svg class="i" aria-hidden="true"><use href="#i-clock"/></svg><span class="sr-only">발효 시간</span> 목표 72h ±2h</label>
             <input type="range" id="slf" min="48" max="96" step="0.5" value="60">
             <span class="v num" id="vf">60.0h</span>
           </div>
@@ -261,7 +283,7 @@
         </div>
         <p class="eyebrow" style="margin-top:14px">도감 <span id="c-count" class="num"></span></p>
         <div id="c-list" class="row" style="gap:5px"></div>
-        <p class="eyebrow" style="margin-top:14px">🏅 이번 시즌 (NPC 점수는 예시 데이터)</p>
+        <p class="eyebrow" style="margin-top:14px"><svg class="i" aria-hidden="true"><use href="#i-medal"/></svg> 이번 시즌 (NPC 점수는 예시 데이터)</p>
         <table><tbody id="t-oly"></tbody></table>
       </section>
     </div>
@@ -269,7 +291,7 @@
     <div id="panel"></div>
   </div>
 
-  <div id="ticker">📰 <span id="news"></span></div>
+  <div id="ticker"><svg class="i" role="img" aria-label="관보"><use href="#i-news"/></svg><span id="news"></span></div>
 </div>
 
 <!-- 세로 진입 = Lite 로비 (D11: 수금 + 경고만) -->
@@ -448,10 +470,11 @@ function render(){
   if(S.tab==="field"){
     rowsFor(["farm","power"],$("#t-farm"));
     const warn=S.inv.sprout>C.STORE.sprout*.7;
-    $("#t-store").innerHTML=[["감자","potato"],["싹난 감자","sprout"],["전분","starch"],["맥주","beer"]]
-      .map(([n,k])=>{
+    $("#t-store").innerHTML=[["감자","potato","potato"],["싹난 감자","sprout","sprout"],
+      ["전분","starch","starch"],["맥주","beer","beer"]]
+      .map(([n,k,ic])=>{
         const pct=S.inv[k]/C.STORE[k]*100, near=pct>88;
-        return `<tr><td>${n}${k==="sprout"&&warn?' <span class="warn">⚠️</span>':""}</td>
+        return `<tr><td><svg class="i" aria-hidden="true"><use href="#i-${ic}"/></svg>${n}${k==="sprout"&&warn?' <span class="warn"><svg class="i" aria-hidden="true"><use href="#i-warn"/></svg></span>':""}</td>
           <td class="r num" style="color:${near?"var(--warn-ink)":"inherit"}">
           ${fmt(S.inv[k],k==="beer"?1:0)} / ${fmt(C.STORE[k])}${near?" (만재)":""}</td></tr>`;
       }).join("");
@@ -486,15 +509,15 @@ function render(){
     $("#t-oly").innerHTML=board.map(([n,mine,npc,u])=>
       `<tr><td>${n}</td><td class="r num">${fmt(mine,1)}${u}</td>
         <td class="r num" style="color:var(--ink-2)">1위 ${fmt(npc,1)}</td>
-        <td class="r">${mine>npc?'<span class="chip on">🏅 1위</span>':'<span class="chip">2위</span>'}</td></tr>`).join("");
+        <td class="r">${mine>npc?'<span class="chip on"><svg class="i" aria-hidden="true"><use href="#i-medal"/></svg> 1위</span>':'<span class="chip">2위</span>'}</td></tr>`).join("");
   }
   renderPanel();
   $("#news").innerHTML=S.news;
   $("#l-al").innerHTML=sack(S.al)+'<span style="font-size:18px"> 자루</span>';
   $("#l-sub").textContent=`맥주 ${fmt(S.inv.beer,1)}병 대기 · 시세 ${m.toFixed(2)}배`;
-  $("#l-warn").textContent=slack()<0?"⚠️ 전력 부족 — 라인 정지":
-    (S.inv.sprout>C.STORE.sprout*.7?"⚠️ 싹난 감자 창고 만재 임박":"");
-  $("#l-news").innerHTML="📰 "+S.news;
+  $("#l-warn").innerHTML=slack()<0?'<svg class="i" aria-hidden="true"><use href="#i-warn"/></svg> 전력 부족 — 라인 정지':
+    (S.inv.sprout>C.STORE.sprout*.7?'<svg class="i" aria-hidden="true"><use href="#i-warn"/></svg> 싹난 감자 창고 만재 임박':"");
+  $("#l-news").innerHTML='<svg class="i" role="img" aria-label="관보"><use href="#i-news"/></svg> '+S.news;
 }
 function renderPanel(){
   const p=$("#panel");
