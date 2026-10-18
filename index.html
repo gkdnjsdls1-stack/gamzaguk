@@ -836,7 +836,8 @@ $("#rail").addEventListener("keydown",e=>{
 $("#main").addEventListener("keydown",e=>{
   if(e.key!=="Enter"&&e.key!==" ")return;
   const r=e.target.closest("[data-up],[data-cult]"); if(!r||!r.hasAttribute("tabindex"))return;
-  e.preventDefault(); r.click();
+  e.preventDefault();
+  r.dispatchEvent(new MouseEvent("click",{bubbles:true}));  // SVG <g>에는 .click()이 없다
 });
 $("#b-harvest").onclick=sell; $("#l-harvest").onclick=sell;
 $("#b-play").onclick=openGame; $("#b-cancel").onclick=closeGame; $("#b-submit").onclick=submitRecipe;
