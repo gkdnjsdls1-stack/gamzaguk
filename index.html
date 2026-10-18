@@ -28,6 +28,7 @@
     --stamp:rgba(192,142,92,.16);
   }
   *{box-sizing:border-box}
+  [hidden]{display:none!important}   /* display를 준 규칙이 기본 [hidden]을 이긴다 */
   html{-webkit-text-size-adjust:100%}
   .i{width:16px; height:16px; flex:none; fill:none; stroke:currentColor;
      stroke-width:2; stroke-linecap:round; stroke-linejoin:round; vertical-align:-.22em}
@@ -149,7 +150,8 @@
   @media (prefers-reduced-motion:reduce){#stamp div{animation:none}}
 
   /* ── 작업장 장면 — 숫자 말고 물건이 보여야 게임이 된다 ────────── */
-  #scene{width:100%; height:auto; display:block; max-height:calc(100dvh - 190px)}
+  section[data-view="field"]{display:flex; flex-direction:column; height:100%}
+  #scene{width:100%; height:auto; display:block; flex:1 1 auto; min-height:130px}
   #scene text{font-size:9px; fill:var(--ink-2); letter-spacing:.06em}
   #scene .lv{font-weight:600; fill:var(--ink)}
   .bld{fill:var(--sack); stroke:var(--ink); stroke-width:1.6; stroke-linejoin:round}
