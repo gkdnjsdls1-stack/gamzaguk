@@ -4,28 +4,34 @@
 <style>
   /* 감자국 — 「감자 자루에 찍힌 도장」. 팔레트는 PLAN.md 13장 그대로. */
   :root{
-    --paper:#EFE6D5; --flesh:#F5E6C8; --skin:#8B5E34; --sprout:#6B8F3C;
-    --solanine:#C94F3D; --gold:#D9A42B;
-    --ink:#2B2118; --ink-2:#6B5A47; --line:#C9B99B; --sack:#E3D5BC;
+    --paper:#EFDCB4; --bg-top:#FFF0CE; --flesh:#FFF7E6; --sack:#F6E7C6;
+    --skin:#A4662C; --sprout:#5A8C2A; --solanine:#D4452F; --gold:#F2B21E;
+    --ink:#2A1D0E; --ink-2:#6E5736; --line:#D9C195;
     /* 글자 전용 — 배경/채움용 원색은 라이트에서 4.5:1을 못 넘는다 */
-    --gold-ink:#6E540C; --warn-ink:#A33726; --ok-ink:#46631F;
-    --stamp:rgba(139,94,52,.14);
+    --gold-ink:#7A5A05; --warn-ink:#A33021; --ok-ink:#3F6417;
+    --stamp:rgba(164,102,44,.16); --row:rgba(164,102,44,.07);
+    --pill:rgba(42,29,14,.07); --lip:rgba(60,38,12,.38);
+    --r:16px; --r-sm:11px;
   }
   @media (prefers-color-scheme: dark){
     :root:not([data-theme="light"]){
-      --paper:#171310; --flesh:#2A231B; --skin:#C08E5C; --sprout:#8FB355;
-      --solanine:#E0705C; --gold:#E8BC51;
-      --ink:#F0E6D4; --ink-2:#A2907A; --line:#5C4E3B; --sack:#211A13;
-      --gold-ink:#E8BC51; --warn-ink:#E0705C; --ok-ink:#8FB355;
-      --stamp:rgba(192,142,92,.16);
+      --paper:#1A1309; --bg-top:#33261300; --flesh:#33281A; --sack:#241B10;
+      --skin:#D08B47; --sprout:#8FD94F; --solanine:#FF6F57; --gold:#FFC53D;
+      --ink:#FFF2DA; --ink-2:#C2A982; --line:#574327;
+      --gold-ink:#FFC53D; --warn-ink:#FF8E79; --ok-ink:#A8E063;
+      --stamp:rgba(255,197,61,.18); --row:rgba(255,255,255,.05);
+      --pill:rgba(0,0,0,.3); --lip:rgba(0,0,0,.5);
+      --bg-top:#2C2112;
     }
   }
   :root[data-theme="dark"]{
-    --paper:#171310; --flesh:#2A231B; --skin:#C08E5C; --sprout:#8FB355;
-    --solanine:#E0705C; --gold:#E8BC51;
-    --ink:#F0E6D4; --ink-2:#A2907A; --line:#5C4E3B; --sack:#211A13;
-      --gold-ink:#E8BC51; --warn-ink:#E0705C; --ok-ink:#8FB355;
-    --stamp:rgba(192,142,92,.16);
+    --paper:#1A1309; --bg-top:#33261300; --flesh:#33281A; --sack:#241B10;
+    --skin:#D08B47; --sprout:#8FD94F; --solanine:#FF6F57; --gold:#FFC53D;
+    --ink:#FFF2DA; --ink-2:#C2A982; --line:#574327;
+    --gold-ink:#FFC53D; --warn-ink:#FF8E79; --ok-ink:#A8E063;
+    --stamp:rgba(255,197,61,.18); --row:rgba(255,255,255,.05);
+    --pill:rgba(0,0,0,.3); --lip:rgba(0,0,0,.5);
+    --bg-top:#2C2112;
   }
   *{box-sizing:border-box}
   [hidden]{display:none!important}   /* display를 준 규칙이 기본 [hidden]을 이긴다 */
@@ -41,10 +47,12 @@
   td .i{color:var(--ink-2); margin-right:6px}
   .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
   body{
-    margin:0; background:var(--paper); color:var(--ink);
+    margin:0; color:var(--ink);
+    background:radial-gradient(130% 85% at 50% 0%, var(--bg-top), transparent 72%), var(--paper);
+    background-attachment:fixed;
     -webkit-tap-highlight-color:transparent;
     font-family:"IBM Plex Sans KR",system-ui,-apple-system,sans-serif;
-    font-size:13px; line-height:1.45;
+    font-size:14px; line-height:1.5;
     font-variant-numeric:tabular-nums; /* 방치형에서 숫자가 흔들리면 싸구려로 보인다 */
     display:flex; align-items:center; justify-content:center;
     min-height:100vh; padding:16px;
@@ -55,13 +63,14 @@
   /* ── 관보 프레임 ──────────────────────────────────────────── */
   #frame{
     width:100%; max-width:1080px; background:var(--flesh);
-    border:1px solid var(--line); box-shadow:0 1px 0 var(--line), 0 18px 40px -28px rgba(0,0,0,.5);
-    display:grid; grid-template-rows:44px 1fr 28px; min-height:462px; max-height:100dvh;
+    border-radius:calc(var(--r) + 4px); overflow:hidden;
+    box-shadow:0 1px 0 rgba(255,255,255,.12) inset, 0 18px 44px -20px rgba(0,0,0,.55);
+    display:grid; grid-template-rows:52px 1fr 30px; min-height:462px; max-height:100dvh;
   }
   /* 가로 폰 = 본편 화면. 높이가 모자란 기기에서는 액자를 버리고 꽉 채운다 */
   @media (max-height:560px){
     body{padding:0; align-items:stretch}
-    #frame{min-height:100dvh; max-width:none; border:none; box-shadow:none;
+    #frame{min-height:100dvh; max-width:none; border-radius:0; box-shadow:none;
       padding-left:env(safe-area-inset-left); padding-right:env(safe-area-inset-right)}
   }
   /* 손가락은 28px 행을 못 짚는다 */
@@ -72,65 +81,76 @@
   }
   /* HUD 44px */
   #hud{
-    display:flex; align-items:center; gap:18px; padding:0 14px;
-    border-bottom:1px solid var(--line); background:var(--sack);
+    display:flex; align-items:center; gap:8px; padding:0 10px;
+    background:var(--sack);
   }
-  #hud .slot{display:flex; align-items:center; gap:6px; white-space:nowrap}
+  #hud .slot{display:flex; align-items:center; gap:7px; white-space:nowrap;
+    background:var(--pill); border-radius:999px; padding:5px 12px 5px 9px}
   #hud .k{font-size:10px; letter-spacing:.14em; color:var(--ink-2); text-transform:uppercase}
-  #hud .v{font-size:15px; font-weight:600}
+  #hud .v{font-family:"Black Han Sans","IBM Plex Sans KR",sans-serif; font-size:17px; letter-spacing:.01em}
   #hud .spacer{flex:1}
-  .bar{position:relative; width:84px; height:7px; background:var(--line); overflow:hidden}
-  .bar>i{position:absolute; inset:0 auto 0 0; background:var(--sprout); display:block}
+  .bar{position:relative; width:74px; height:9px; background:var(--lip); overflow:hidden; border-radius:999px}
+  .bar>i{position:absolute; inset:0 auto 0 0; background:var(--sprout); display:block; border-radius:999px}
   .bar.gold>i{background:var(--gold)}
   .bar.warn>i{background:var(--solanine)}
 
   /* 본문: 레일 64 | 메인 | 패널 320 */
   #body{display:grid; grid-template-columns:64px minmax(0,1fr) clamp(216px,26vw,320px); min-height:0}
   #rail{
-    border-right:1px solid var(--line); display:flex; flex-direction:column;
-    align-items:center; padding-top:8px; gap:4px; background:var(--sack);
+    display:flex; flex-direction:column;
+    align-items:center; padding:10px 0 0; gap:8px; background:var(--sack);
   }
   #rail button{
-    width:48px; height:44px; font-size:19px; background:none; border:1px solid transparent;
-    color:var(--ink); cursor:pointer; border-radius:2px;
+    width:46px; height:46px; background:var(--pill); border:none;
+    color:var(--ink-2); cursor:pointer; border-radius:14px; display:grid; place-items:center;
+    transition:transform .1s, background .15s, color .15s;
   }
-  #rail button[aria-selected="true"]{background:var(--flesh); border-color:var(--line); box-shadow:inset 2px 0 0 var(--skin)}
+  #rail button:active{transform:scale(.92)}
+  #rail button[aria-selected="true"]{background:var(--skin); color:#fff;
+    box-shadow:0 3px 0 var(--lip)}
   #rail button:focus-visible{outline:2px solid var(--skin); outline-offset:1px}
   #main{padding:10px 14px; min-width:0; overflow:auto}
-  #panel{border-left:1px solid var(--line); padding:10px 12px; overflow:auto; background:var(--sack)}
+  #panel{padding:12px; overflow:auto; background:var(--sack)}
 
   /* 티커 28px */
   #ticker{
-    border-top:1px solid var(--line); display:flex; align-items:center; gap:8px;
-    padding:0 12px; font-size:11.5px; color:var(--ink-2); overflow:hidden; white-space:nowrap;
+    display:flex; align-items:center; gap:8px; background:var(--pill);
+    padding:0 12px; font-size:12px; color:var(--ink-2); overflow:hidden; white-space:nowrap;
   }
   #ticker b{color:var(--skin); font-weight:600}
 
   /* ── 관청 서식 요소 ───────────────────────────────────────── */
-  .eyebrow{font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-2); margin:0 0 6px}
-  table{width:100%; border-collapse:collapse; font-size:12.5px}
-  th,td{height:28px; padding:0 6px; text-align:left; border-bottom:1px solid var(--line)}
-  th{font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-2); font-weight:500}
+  .eyebrow{font-size:12px; font-weight:600; color:var(--ink-2); margin:0 0 8px}
+  table{width:100%; border-collapse:separate; border-spacing:0 5px; font-size:13px}
+  th,td{height:32px; padding:0 10px; text-align:left}
+  th{font-size:11px; color:var(--ink-2); font-weight:600; height:20px}
   td.r,th.r{text-align:right}
+  tbody td{background:var(--row)}
+  tbody td:first-child{border-radius:var(--r-sm) 0 0 var(--r-sm)}
+  tbody td:last-child{border-radius:0 var(--r-sm) var(--r-sm) 0}
   tr.sel td{background:var(--stamp)}
   tbody tr{cursor:pointer}
   tbody tr:focus-visible{outline:2px solid var(--skin); outline-offset:-2px}
   button.act{
-    font:inherit; font-weight:600; color:var(--flesh); background:var(--skin);
-    border:none; padding:7px 12px; cursor:pointer; letter-spacing:.02em;
+    font:inherit; font-weight:700; color:#fff; background:var(--skin);
+    border:none; padding:10px 18px; cursor:pointer; border-radius:999px;
+    box-shadow:0 4px 0 var(--lip); transition:transform .07s, box-shadow .07s;
   }
-  button.act.ghost{background:none; color:var(--skin); border:1px solid var(--skin)}
-  button.act.gold{background:var(--gold); color:#2B2118}
-  button.act:disabled{opacity:.4; cursor:not-allowed}
+  button.act:active{transform:translateY(4px); box-shadow:0 0 0 var(--lip)}
+  button.act.ghost{background:var(--pill); color:var(--ink); box-shadow:0 3px 0 var(--lip)}
+  button.act.gold{background:var(--gold); color:#2A1D0E}
+  button.act:disabled{opacity:.45; cursor:not-allowed; box-shadow:0 4px 0 var(--lip)}
+  button.act:disabled:active{transform:none}
   button.act:focus-visible{outline:2px solid var(--ink); outline-offset:2px}
   .row{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
-  .kv{display:flex; justify-content:space-between; gap:10px; padding:4px 0; border-bottom:1px dotted var(--line)}
+  .kv{display:flex; justify-content:space-between; gap:10px; padding:7px 10px; border-radius:var(--r-sm);
+    background:var(--row); margin-bottom:4px}
   .kv span:first-child{color:var(--ink-2)}
   .warn{color:var(--warn-ink)}
   .ok{color:var(--ok-ink)}
   .chip{
-    display:inline-block; padding:1px 7px; border:1px solid var(--line);
-    font-size:11px; letter-spacing:.04em;
+    display:inline-block; padding:3px 10px; border:none; background:var(--row);
+    border-radius:999px; font-size:12px; font-weight:600;
   }
   .chip.on{background:var(--stamp); border-color:var(--skin); color:var(--skin)}
   .grade{font-family:"Black Han Sans",sans-serif; font-size:20px}
@@ -154,18 +174,18 @@
   #scene{width:100%; height:auto; display:block; flex:1 1 auto; min-height:130px}
   #scene text{font-size:9px; fill:var(--ink-2); letter-spacing:.06em}
   #scene .lv{font-weight:600; fill:var(--ink)}
-  .bld{fill:var(--sack); stroke:var(--ink); stroke-width:1.6; stroke-linejoin:round}
-  .soil{fill:var(--skin); opacity:.5; stroke:none}
+  .bld{fill:var(--flesh); stroke:var(--ink); stroke-width:2.6; stroke-linejoin:round; stroke-linecap:round}
+  .soil{fill:var(--skin); opacity:.85; stroke:none}
   .wire{fill:none; stroke:var(--ink-2); stroke-width:1.3; opacity:.7}
-  .beltline{fill:none; stroke:var(--line); stroke-width:5; stroke-linecap:round}
-  .plant{fill:none; stroke:var(--ok-ink); stroke-width:2.2;
+  .beltline{fill:none; stroke:var(--lip); stroke-width:7; stroke-linecap:round}
+  .plant{fill:none; stroke:var(--sprout); stroke-width:2.8;
     transform-box:fill-box; transform-origin:50% 100%; animation:sway 3.2s ease-in-out infinite}
   .plant:nth-of-type(2){animation-delay:-.8s}
   .plant:nth-of-type(3){animation-delay:-1.6s}
   .plant:nth-of-type(4){animation-delay:-2.4s}
   .plant:nth-of-type(5){animation-delay:-3s}
   @keyframes sway{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
-  .wheel{fill:none; stroke:var(--ink); stroke-width:1.6;
+  .wheel{fill:none; stroke:var(--ink); stroke-width:2.2;
     transform-box:fill-box; transform-origin:50% 50%; animation:spin 3.4s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
   .bubble{fill:var(--gold); opacity:0; animation:bub 2.3s ease-in infinite}
@@ -174,7 +194,7 @@
   @keyframes bub{0%{opacity:0; transform:translateY(0)}25%{opacity:.85}100%{opacity:0; transform:translateY(-24px)}}
   .dot{fill:var(--skin); animation:flow var(--belt,2.2s) linear infinite}
   @keyframes flow{to{transform:translateX(10px)}}
-  .sackunit{fill:var(--gold); stroke:var(--ink); stroke-width:1.6; transition:opacity .4s}
+  .sackunit{fill:var(--gold); stroke:var(--ink); stroke-width:2.2; transition:opacity .4s}
   .beer{fill:var(--gold); transition:y .5s, height .5s}
   .station{cursor:pointer}
   .station:focus-visible{outline:2px solid var(--skin); outline-offset:2px}
@@ -202,8 +222,8 @@
   .track .goal{position:absolute; top:9px; height:8px; background:var(--sprout); opacity:.45}
   input[type=range]{width:100%; margin:0; accent-color:var(--skin); position:relative; z-index:1}
   .sl .v{font-size:12px; font-weight:600}
-  .meter{height:12px; border:1px solid var(--line); position:relative; background:var(--sack)}
-  .meter>i{position:absolute; inset:0 auto 0 0; background:var(--gold)}
+  .meter{height:14px; border-radius:999px; position:relative; background:var(--lip); overflow:hidden}
+  .meter>i{position:absolute; inset:0 auto 0 0; background:var(--gold); border-radius:999px}
   .meter>s{position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--solanine)}
 
   /* 세로 = Lite (D11) */
@@ -213,10 +233,10 @@
     #frame{display:none}
     #lite{display:flex; flex-direction:column; min-height:100vh; width:100%}
   }
-  #lite header{padding:18px 16px 10px; border-bottom:1px solid var(--line); background:var(--sack)}
-  #lite .big{font-family:"Black Han Sans",sans-serif; font-size:40px; line-height:1.1}
+  #lite header{padding:20px 16px 14px; background:var(--sack); border-radius:0 0 var(--r) var(--r)}
+  #lite .big{font-family:"Black Han Sans",sans-serif; font-size:46px; line-height:1.1}
   #lite main{padding:16px; display:flex; flex-direction:column; gap:14px; flex:1}
-  #lite .note{font-size:12px; color:var(--ink-2); border:1px dashed var(--line); padding:10px}
+  #lite .note{font-size:12.5px; color:var(--ink-2); background:var(--row); border-radius:var(--r); padding:12px}
   #lite button.act{padding:20px; font-size:17px; width:100%;
     display:flex; align-items:center; justify-content:center; gap:12px}
 
