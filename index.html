@@ -242,7 +242,9 @@
 
   /* ── 자루 털기 — 네모 버튼이 아니라 자루를 누른다 ─────────────── */
   #l-harvest{background:none; color:var(--ink); padding:4px 0 10px;
-    flex-direction:column; gap:4px}
+    flex-direction:column; gap:4px;
+    box-shadow:none; border-radius:var(--r)}   /* 알약 버튼 스킨이 자루까지 먹었다 */
+  #l-harvest:active{transform:none; box-shadow:none}
   #l-harvest:focus-visible{outline:2px solid var(--skin); outline-offset:4px}
   .sackwrap{position:relative; width:150px; height:150px; display:grid; place-items:center;
     border-radius:50%; transition:background .15s}
