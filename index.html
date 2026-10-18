@@ -148,6 +148,48 @@
   @keyframes thud{0%{transform:rotate(-14deg) scale(2.6); opacity:0}60%{opacity:.95}100%{transform:rotate(-14deg) scale(1); opacity:.92}}
   @media (prefers-reduced-motion:reduce){#stamp div{animation:none}}
 
+  /* ── 작업장 장면 — 숫자 말고 물건이 보여야 게임이 된다 ────────── */
+  #scene{width:100%; height:auto; display:block; max-height:calc(100dvh - 190px)}
+  #scene text{font-size:9px; fill:var(--ink-2); letter-spacing:.06em}
+  #scene .lv{font-weight:600; fill:var(--ink)}
+  .bld{fill:var(--sack); stroke:var(--ink); stroke-width:1.6; stroke-linejoin:round}
+  .soil{fill:var(--skin); opacity:.5; stroke:none}
+  .wire{fill:none; stroke:var(--ink-2); stroke-width:1.3; opacity:.7}
+  .beltline{fill:none; stroke:var(--line); stroke-width:5; stroke-linecap:round}
+  .plant{fill:none; stroke:var(--ok-ink); stroke-width:2.2;
+    transform-box:fill-box; transform-origin:50% 100%; animation:sway 3.2s ease-in-out infinite}
+  .plant:nth-of-type(2){animation-delay:-.8s}
+  .plant:nth-of-type(3){animation-delay:-1.6s}
+  .plant:nth-of-type(4){animation-delay:-2.4s}
+  .plant:nth-of-type(5){animation-delay:-3s}
+  @keyframes sway{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
+  .wheel{fill:none; stroke:var(--ink); stroke-width:1.6;
+    transform-box:fill-box; transform-origin:50% 50%; animation:spin 3.4s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .bubble{fill:var(--gold); opacity:0; animation:bub 2.3s ease-in infinite}
+  .bubble:nth-of-type(2){animation-delay:-.8s}
+  .bubble:nth-of-type(3){animation-delay:-1.5s}
+  @keyframes bub{0%{opacity:0; transform:translateY(0)}25%{opacity:.85}100%{opacity:0; transform:translateY(-24px)}}
+  .dot{fill:var(--skin); animation:flow var(--belt,2.2s) linear infinite}
+  @keyframes flow{to{transform:translateX(10px)}}
+  .sackunit{fill:var(--gold); stroke:var(--ink); stroke-width:1.6; transition:opacity .4s}
+  .beer{fill:var(--gold); transition:y .5s, height .5s}
+  .station{cursor:pointer}
+  .station:focus-visible{outline:2px solid var(--skin); outline-offset:2px}
+  .station.sel .bld,.station.sel .soil{fill:var(--skin)}
+  .station.sel .soil{opacity:.75}
+  /* 전력이 끊기면 공장이 멈춘다 — 숫자가 아니라 정지로 보인다 */
+  .scene.stopped .dot,.scene.stopped .wheel,.scene.stopped .bubble{animation-play-state:paused}
+  .scene.stopped .beltline{stroke:var(--warn-ink); opacity:.45}
+  .scene.stopped .wire{stroke:var(--warn-ink); stroke-dasharray:4 3}
+  .readout{display:flex; gap:14px; flex-wrap:wrap; align-items:center;
+    margin-top:6px; font-size:12px; color:var(--ink-2)}
+  .readout b{color:var(--ink); font-weight:600}
+  .readout span{display:inline-flex; align-items:center; gap:4px}
+  @media (prefers-reduced-motion:reduce){
+    .plant,.wheel,.bubble,.dot{animation:none}
+  }
+
   /* 미니게임 */
   #game{display:none}
   #game.on{display:block}
@@ -270,22 +312,71 @@
 
   <div id="body">
     <div id="rail" role="tablist">
-      <button role="tab" data-tab="field" aria-selected="false" aria-controls="v-field" aria-label="밭" title="밭"><svg class="i" aria-hidden="true"><use href="#i-sprout"/></svg></button>
+      <button role="tab" data-tab="field" aria-selected="false" aria-controls="v-field" aria-label="작업장" title="작업장"><svg class="i" aria-hidden="true"><use href="#i-sprout"/></svg></button>
       <button role="tab" data-tab="brewery" aria-selected="true" aria-controls="v-brewery" aria-label="양조장" title="양조장"><svg class="i" aria-hidden="true"><use href="#i-beer"/></svg></button>
       <button role="tab" data-tab="codex" aria-selected="false" aria-controls="v-codex" aria-label="도감" title="도감"><svg class="i" aria-hidden="true"><use href="#i-book"/></svg></button>
     </div>
 
     <div id="main">
       <!-- 밭 -->
-      <section id="v-field" role="tabpanel" aria-label="밭" data-view="field" hidden>
-        <p class="eyebrow">제1호 서식 · 생산 현황</p>
-        <table>
-          <thead><tr><th>공방</th><th>등급</th><th class="r">산출</th><th class="r">증설비</th></tr></thead>
-          <tbody id="t-farm"></tbody>
-        </table>
-        <p class="eyebrow" style="margin-top:12px">제2호 서식 · 창고</p>
-        <table><tbody id="t-store"></tbody></table>
-        <div class="row" style="margin-top:12px">
+      <section id="v-field" role="tabpanel" aria-label="작업장" data-view="field" hidden>
+        <svg id="scene" class="scene" viewBox="0 0 470 142" role="img" aria-label="감자국 작업장">
+          <!-- 전지소 + 전력선 -->
+          <g class="station" data-up="power" tabindex="0" role="button" aria-label="감자 전지소">
+            <rect class="bld" x="8" y="8" width="56" height="30" rx="2"/>
+            <path d="M28 13l-8 13h6.5l-1.5 10 9-14h-6.5z" fill="var(--gold)" stroke="var(--ink)"
+                  stroke-width="1.2" stroke-linejoin="round"/>
+            <text x="42" y="28" class="lv" id="lv-power">Lv1</text>
+          </g>
+          <path class="wire" d="M64 23h336"/><path class="wire" d="M190 23v33"/><path class="wire" d="M326 23v33"/>
+
+          <!-- 밭 -->
+          <g class="station" data-up="farm" tabindex="0" role="button" aria-label="감자밭">
+            <path class="soil" d="M10 126h86l-7-14H17z"/>
+            <use class="plant" href="#i-sprout" x="14" y="100" width="20" height="20"/><use class="plant" href="#i-sprout" x="32" y="100" width="20" height="20"/><use class="plant" href="#i-sprout" x="50" y="100" width="20" height="20"/><use class="plant" href="#i-sprout" x="68" y="100" width="20" height="20"/><use class="plant" href="#i-sprout" x="76" y="100" width="20" height="20"/>
+            <text x="10" y="138">밭</text><text x="34" y="138" class="lv" id="lv-farm">Lv1</text>
+          </g>
+          <path class="beltline" d="M100 120h40"/><circle class="dot" cx="102" cy="120" r="3.4"/><circle class="dot" cx="112" cy="120" r="3.4"/><circle class="dot" cx="122" cy="120" r="3.4"/><circle class="dot" cx="132" cy="120" r="3.4"/>
+
+          <!-- 방앗간 -->
+          <g class="station" data-up="mill" tabindex="0" role="button" aria-label="전분 방앗간">
+            <path class="bld" d="M150 126V78h80v48z"/>
+            <path class="bld" d="M144 78l46-22 46 22z"/>
+            <g class="wheel"><circle cx="190" cy="104" r="14"/>
+              <path d="M190 90v28M176 104h28M180 94l20 20M200 94l-20 20"/></g>
+            <text x="150" y="138">방앗간</text><text x="196" y="138" class="lv" id="lv-mill">Lv1</text>
+          </g>
+          <path class="beltline" d="M240 120h40"/><circle class="dot" cx="242" cy="120" r="3.4"/><circle class="dot" cx="252" cy="120" r="3.4"/><circle class="dot" cx="262" cy="120" r="3.4"/><circle class="dot" cx="272" cy="120" r="3.4"/>
+
+          <!-- 양조장 -->
+          <g class="station" data-up="brew" tabindex="0" role="button" aria-label="감자양조장">
+            <path class="bld" d="M292 126l5-44h50l5 44z"/>
+            <rect class="beer" id="beerlevel" x="300" y="116" width="44" height="8"/>
+            <path class="bld" d="M292 126l5-44h50l5 44z" fill="none"/>
+            <circle class="bubble" cx="310" cy="112" r="2.6"/>
+            <circle class="bubble" cx="322" cy="112" r="2.2"/>
+            <circle class="bubble" cx="336" cy="112" r="2.8"/>
+            <text x="292" y="138">양조장</text><text x="338" y="138" class="lv" id="lv-brew">Lv1</text>
+          </g>
+          <path class="beltline" d="M364 120h30"/>
+
+          <!-- 창고 -->
+          <g>
+            <use class="sackunit" href="#i-sack" x="404" y="86" width="18" height="18"/><use class="sackunit" href="#i-sack" x="424" y="86" width="18" height="18"/><use class="sackunit" href="#i-sack" x="444" y="86" width="18" height="18"/><use class="sackunit" href="#i-sack" x="404" y="106" width="18" height="18"/><use class="sackunit" href="#i-sack" x="424" y="106" width="18" height="18"/><use class="sackunit" href="#i-sack" x="444" y="106" width="18" height="18"/>
+            <path d="M400 126h64" stroke="var(--line)" stroke-width="2" fill="none"/>
+            <text x="400" y="138">창고</text>
+          </g>
+        </svg>
+
+        <div class="readout">
+          <span><svg class="i" aria-hidden="true"><use href="#i-potato"/></svg>감자 <b class="num" id="sc-potato">0</b></span>
+          <span><svg class="i" aria-hidden="true"><use href="#i-sprout"/></svg>싹 <b class="num" id="sc-sprout">0</b></span>
+          <span><svg class="i" aria-hidden="true"><use href="#i-starch"/></svg>전분 <b class="num" id="sc-starch">0</b></span>
+          <span><svg class="i" aria-hidden="true"><use href="#i-beer"/></svg>맥주 <b class="num" id="sc-beer">0</b></span>
+          <span id="sc-stop" class="warn" hidden><svg class="i" aria-hidden="true"><use href="#i-warn"/></svg>전력 부족 — 라인 정지</span>
+        </div>
+
+        <div class="row" style="margin-top:10px">
           <button class="act gold" id="b-harvest"><svg class="i sackmini" aria-hidden="true"><use href="#i-sack"/></svg> 자루 털기</button>
           <span id="s-harvest" class="num" style="color:var(--ink-2)"></span>
         </div>
@@ -551,16 +642,7 @@ function render(){
   $("#h-speed").textContent="속도 ×"+S.speed;
 
   if(S.tab==="field"){
-    rowsFor(["farm","power"],$("#t-farm"));
-    const warn=S.inv.sprout>C.STORE.sprout*.7;
-    $("#t-store").innerHTML=[["감자","potato","potato"],["싹난 감자","sprout","sprout"],
-      ["전분","starch","starch"],["맥주","beer","beer"]]
-      .map(([n,k,ic])=>{
-        const pct=S.inv[k]/C.STORE[k]*100, near=pct>88;
-        return `<tr><td><svg class="i" aria-hidden="true"><use href="#i-${ic}"/></svg>${n}${k==="sprout"&&warn?' <span class="warn"><svg class="i" aria-hidden="true"><use href="#i-warn"/></svg></span>':""}</td>
-          <td class="r num" style="color:${near?"var(--warn-ink)":"inherit"}">
-          ${fmt(S.inv[k],k==="beer"?1:0)} / ${fmt(C.STORE[k])}${near?" (만재)":""}</td></tr>`;
-      }).join("");
+    renderScene();
     $("#s-harvest").textContent=S.flash||(S.inv.beer>0?fmt(S.inv.beer,1)+"병 대기":"맥주가 없다");
   }
   if(S.tab==="brewery"){
@@ -602,6 +684,37 @@ function render(){
     (S.inv.sprout>C.STORE.sprout*.7?'<svg class="i" aria-hidden="true"><use href="#i-warn"/></svg> 싹난 감자 창고 만재 임박':"");
   $("#l-news").innerHTML='<svg class="i" role="img" aria-label="관보"><use href="#i-news"/></svg> '+S.news;
 }
+/* 장면은 innerHTML을 갈아끼우지 않는다 — 속성만 바꾸므로 포커스가 살아 있다 */
+function renderScene(){
+  const sc=$("#scene"); if(!sc)return;
+  const live=slack()>=0;
+  sc.classList.toggle("stopped",!live);
+  $("#sc-stop").hidden=live;
+  for(const k of ["farm","mill","brew","power"]) $("#lv-"+k).textContent="Lv"+S.lv[k];
+
+  // 밭 작물 수 = 밭 등급 (보이는 것이 곧 등급이다)
+  const grown=Math.min(5,S.lv.farm);
+  sc.querySelectorAll(".plant").forEach((e,i)=>e.style.opacity=i<grown?1:0);
+
+  // 창고 자루 = 재고 비율. 가진 것이 눈에 쌓인다
+  const fill=(S.inv.potato/C.STORE.potato+S.inv.starch/C.STORE.starch)/2;
+  const n=Math.round(Math.min(1,fill)*6);
+  sc.querySelectorAll(".sackunit").forEach((e,i)=>e.style.opacity=i<n?1:.1);
+
+  // 양조조 수위
+  const h=Math.max(3,Math.min(40,S.inv.beer/C.STORE.beer*40));
+  const bl=$("#beerlevel"); bl.setAttribute("height",h.toFixed(1)); bl.setAttribute("y",(124-h).toFixed(1));
+
+  // 벨트 속도 — 방앗간 등급이 오르면 눈에 띄게 빨라진다
+  sc.style.setProperty("--belt",(2.6/(0.5+S.lv.mill*0.5)).toFixed(2)+"s");
+
+  sc.querySelectorAll(".station").forEach(g=>g.classList.toggle("sel",g.dataset.up===(S.selLine||"farm")));
+  $("#sc-potato").textContent=fmt(S.inv.potato);
+  $("#sc-sprout").textContent=fmt(S.inv.sprout);
+  $("#sc-starch").textContent=fmt(S.inv.starch);
+  $("#sc-beer").textContent=fmt(S.inv.beer,1);
+}
+
 function renderPanel(){
   const p=$("#panel");
   const _a=document.activeElement, _k=p.contains(_a)?_a.id:null;
@@ -720,7 +833,7 @@ $("#rail").addEventListener("keydown",e=>{
 /* 표 행 선택 — 마우스가 없으면 교배가 아예 안 됐다 */
 $("#main").addEventListener("keydown",e=>{
   if(e.key!=="Enter"&&e.key!==" ")return;
-  const r=e.target.closest("tr[tabindex]"); if(!r)return;
+  const r=e.target.closest("[data-up],[data-cult]"); if(!r||!r.hasAttribute("tabindex"))return;
   e.preventDefault(); r.click();
 });
 $("#b-harvest").onclick=sell; $("#l-harvest").onclick=sell;
