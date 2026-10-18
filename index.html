@@ -494,14 +494,16 @@ function sell(){
 }
 
 /* 털리는 느낌은 모션이 만든다 — 빈 자루는 쏟아지지 않고 흔들리기만 */
+const shakeTimer={};
 function shakeSack(got){
   const g=$("#l-gain"); if(g) g.textContent=got>0?"+"+sack(got)+" 자루":"";
   for(const id of ["l-harvest","b-harvest"]){
     const b=$("#"+id); if(!b)continue;
+    clearTimeout(shakeTimer[id]);             // 이전 탭의 타이머가 이번 모션을 걷어갔다
     b.classList.remove("shaking","empty");
     void b.offsetWidth;                       // 리플로우 1회 = 애니메이션 재생 리셋
     b.classList.add(got>0?"shaking":"empty");
-    setTimeout(()=>b.classList.remove("shaking","empty"), got>0?1400:460);
+    shakeTimer[id]=setTimeout(()=>b.classList.remove("shaking","empty"), got>0?1400:460);
   }
 }
 
